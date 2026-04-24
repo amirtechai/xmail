@@ -5,7 +5,7 @@
 ## Durum Özeti
 - Başlangıç: 2026-04-22
 - Son güncelleme: 2026-04-24
-- Tamamlanan: 4/12
+- Tamamlanan: 6/12
 
 ---
 
@@ -73,7 +73,7 @@
 
 ---
 
-## E — Hunter.io Integration [ ]
+## E — Hunter.io Integration [x]
 **Dosyalar:**
 - `backend/app/scrapers/hunter_client.py` (YENİ)
 - `backend/app/agents/nodes/hunter_lookup.py` (YENİ)
@@ -87,7 +87,7 @@
 
 ---
 
-## F — RSS Feed Scraper Node [ ]
+## F — RSS Feed Scraper Node [x]
 **Dosyalar:**
 - `backend/app/agents/nodes/rss_feed_reader.py` (YENİ)
 - `backend/app/agents/graph.py` (güncelle)
