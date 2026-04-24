@@ -1,4 +1,4 @@
-FROM python:3.12-slim AS builder
+FROM python:3.12-slim-bookworm AS builder
 
 WORKDIR /build
 
@@ -12,7 +12,7 @@ COPY pyproject.toml ./
 RUN /root/.local/bin/uv pip install --system --no-cache -r pyproject.toml
 
 # Runtime stage
-FROM python:3.12-slim
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Install Playwright browsers (needed for scraping)
-RUN pip install --no-cache-dir playwright==1.48.2 && playwright install --with-deps chromium
+RUN pip install --no-cache-dir playwright==1.50.0 && playwright install --with-deps chromium
 
 COPY . .
 

@@ -21,6 +21,11 @@ coverage.xml
 .env
 .env.local
 .env.*.local
+.env.prod
+backend/.env
+
+# Claude Code
+.claude/settings.local.json
 
 # IDE
 .vscode/

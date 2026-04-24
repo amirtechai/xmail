@@ -1,0 +1,58 @@
+# Server overlay — nginx on host handles TLS; containers on local ports only
+# Usage: docker compose -f docker-compose.yml -f docker-compose.server.yml up -d
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: 1b62841b14ce92aed2036b9e0bdb0398d1454f3b
+
+  redis:
+    command: >
+      redis-server
+      --requirepass cb222c5d5c263a4729a49267324f49d1dd3ed5a8
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+
+  backend:
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: always
+
+  worker:
+    restart: always
+
+  beat:
+    restart: always
+
+  flower:
+    ports:
+      - "127.0.0.1:5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://:cb222c5d5c263a4729a49267324f49d1dd3ed5a8@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:cb222c5d5c263a4729a49267324f49d1dd3ed5a8@redis:6379/0
+    restart: always
+
+  frontend:
+    ports:
+      - "127.0.0.1:4000:8080"
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: https://xmail.amirtech.ai/api
+
+  prometheus:
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: always
+
+  grafana:
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=700cda54debb516a3243ae71
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=https://xmail.amirtech.ai/grafana
+    restart: always
