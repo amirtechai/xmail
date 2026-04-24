@@ -65,6 +65,17 @@ class AIDraftResponse(BaseModel):
     subject_variants: list[str]
 
 
+class PreviewRequest(BaseModel):
+    sample_first_name: str = "Alex"
+    sample_company: str = "Acme Corp"
+
+
+class PreviewResponse(BaseModel):
+    subject: str
+    html: str
+    text: str
+
+
 class TestSendRequest(BaseModel):
     to_email: str
     subject_override: str | None = None

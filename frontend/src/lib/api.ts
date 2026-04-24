@@ -601,6 +601,11 @@ export const campaignsApi = {
       scheduled_at: scheduledAt ?? null,
       batch_size_per_hour: batchSize ?? null,
     }),
+  preview: (id: string, sampleFirstName = 'Alex', sampleCompany = 'Acme Corp') =>
+    api.post<{ subject: string; html: string; text: string }>(`/campaigns/${id}/preview`, {
+      sample_first_name: sampleFirstName,
+      sample_company: sampleCompany,
+    }),
   testSend: (id: string, toEmail: string, subjectOverride?: string) =>
     api.post(`/campaigns/${id}/test-send`, {
       to_email: toEmail,

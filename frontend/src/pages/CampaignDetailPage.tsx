@@ -5,9 +5,12 @@ import {
   ArrowLeft,
   ChevronDown,
   ChevronRight,
+  Eye,
   Plus,
   RefreshCw,
+  Send,
   Trash2,
+  X,
 } from 'lucide-react'
 import {
   Bar,
@@ -360,6 +363,166 @@ function SequencesTab({ campaignId }: { campaignId: string }) {
   )
 }
 
+// ── Preview / Test Send Modal ─────────────────────────────────────────────────
+
+function PreviewModal({ campaignId, onClose }: { campaignId: string; onClose: () => void }) {
+  const [tab, setTab] = useState<'preview' | 'send'>('preview')
+  const [firstName, setFirstName] = useState('Alex')
+  const [company, setCompany] = useState('Acme Corp')
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null)
+  const [previewSubject, setPreviewSubject] = useState('')
+  const [previewLoading, setPreviewLoading] = useState(false)
+  const [toEmail, setToEmail] = useState('')
+  const [subjectOverride, setSubjectOverride] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendResult, setSendResult] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const loadPreview = async () => {
+    setPreviewLoading(true)
+    setError(null)
+    try {
+      const { data } = await campaignsApi.preview(campaignId, firstName, company)
+      setPreviewHtml(data.html)
+      setPreviewSubject(data.subject)
+      if (!subjectOverride) setSubjectOverride(data.subject)
+    } catch {
+      setError('Failed to load preview.')
+    } finally {
+      setPreviewLoading(false)
+    }
+  }
+
+  useEffect(() => { void loadPreview() }, [])
+
+  const handleSend = async () => {
+    if (!toEmail.trim()) return
+    setSending(true)
+    setSendResult(null)
+    setError(null)
+    try {
+      await campaignsApi.testSend(campaignId, toEmail.trim(), subjectOverride || undefined)
+      setSendResult(`Test email sent to ${toEmail.trim()}`)
+    } catch {
+      setError('Failed to send test email. Check SMTP configuration.')
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <div className="bg-bg-secondary border border-border rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 border-b border-border shrink-0">
+          <div className="flex gap-1">
+            <button
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${tab === 'preview' ? 'bg-bg-tertiary text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+              onClick={() => setTab('preview')}
+            >
+              <Eye className="w-3.5 h-3.5" /> Preview
+            </button>
+            <button
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors ${tab === 'send' ? 'bg-bg-tertiary text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}
+              onClick={() => setTab('send')}
+            >
+              <Send className="w-3.5 h-3.5" /> Test Send
+            </button>
+          </div>
+          <button onClick={onClose} className="text-text-muted hover:text-text-primary">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {/* Preview tab */}
+          {tab === 'preview' && (
+            <>
+              {/* Sample data inputs */}
+              <div className="flex gap-3 items-end">
+                <label className="flex-1 space-y-1">
+                  <span className="text-xs text-text-muted">first_name</span>
+                  <input className="input text-sm w-full" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                </label>
+                <label className="flex-1 space-y-1">
+                  <span className="text-xs text-text-muted">company</span>
+                  <input className="input text-sm w-full" value={company} onChange={(e) => setCompany(e.target.value)} />
+                </label>
+                <button className="btn-secondary text-sm shrink-0" onClick={() => { void loadPreview() }} disabled={previewLoading}>
+                  {previewLoading ? 'Loading…' : 'Refresh'}
+                </button>
+              </div>
+
+              {error && <div className="text-accent-red text-xs">{error}</div>}
+
+              {previewSubject && (
+                <div className="bg-bg-tertiary border border-border rounded-md px-3 py-2">
+                  <span className="text-xs text-text-muted">Subject: </span>
+                  <span className="text-sm text-text-primary">{previewSubject}</span>
+                </div>
+              )}
+
+              {previewLoading ? (
+                <div className="h-64 flex items-center justify-center text-text-muted text-sm">Loading preview…</div>
+              ) : previewHtml ? (
+                <div className="border border-border rounded-md overflow-hidden bg-white">
+                  <iframe
+                    srcDoc={previewHtml}
+                    className="w-full"
+                    style={{ height: '480px', border: 'none' }}
+                    sandbox="allow-same-origin"
+                    title="Email preview"
+                  />
+                </div>
+              ) : null}
+            </>
+          )}
+
+          {/* Test Send tab */}
+          {tab === 'send' && (
+            <div className="space-y-4 max-w-md">
+              <p className="text-sm text-text-secondary">
+                Send a test email to verify layout and content before launching the campaign.
+              </p>
+              <label className="block space-y-1">
+                <span className="text-xs text-text-muted">Recipient email *</span>
+                <input
+                  className="input text-sm w-full"
+                  type="email"
+                  value={toEmail}
+                  onChange={(e) => setToEmail(e.target.value)}
+                  placeholder="you@example.com"
+                />
+              </label>
+              <label className="block space-y-1">
+                <span className="text-xs text-text-muted">Subject override (optional)</span>
+                <input
+                  className="input text-sm w-full"
+                  value={subjectOverride}
+                  onChange={(e) => setSubjectOverride(e.target.value)}
+                  placeholder="Leave blank to use campaign subject"
+                />
+              </label>
+
+              {error && <div className="text-accent-red text-xs">{error}</div>}
+              {sendResult && <div className="text-accent-green text-xs">{sendResult}</div>}
+
+              <button
+                className="btn-primary text-sm flex items-center gap-2"
+                onClick={() => { void handleSend() }}
+                disabled={sending || !toEmail.trim()}
+              >
+                <Send className="w-3.5 h-3.5" />
+                {sending ? 'Sending…' : 'Send Test Email'}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── KPI Card ──────────────────────────────────────────────────────────────────
 
 function KPI({ label, value, sub, warn }: { label: string; value: string | number; sub?: string; warn?: boolean }) {
@@ -417,6 +580,7 @@ export default function CampaignDetailPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [recLoading, setRecLoading] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
   const loadStats = async () => {
     if (!id) return
@@ -465,6 +629,13 @@ export default function CampaignDetailPage() {
           <div className="text-xs text-text-muted">{id?.slice(0, 8)}… · {stats.status}</div>
         </div>
         <button
+          className="btn-secondary flex items-center gap-1.5 text-sm px-3 py-1.5"
+          onClick={() => setShowPreview(true)}
+          title="Preview & Test Send"
+        >
+          <Eye className="w-3.5 h-3.5" /> Preview
+        </button>
+        <button
           className="btn-secondary p-2"
           onClick={() => { void loadStats() }}
           title="Refresh"
@@ -472,6 +643,9 @@ export default function CampaignDetailPage() {
           <RefreshCw className="w-4 h-4" />
         </button>
       </div>
+      {showPreview && id && (
+        <PreviewModal campaignId={id} onClose={() => setShowPreview(false)} />
+      )}
 
       {/* Alerts */}
       {stats.alerts.length > 0 && (

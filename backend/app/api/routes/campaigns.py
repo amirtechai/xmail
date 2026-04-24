@@ -21,6 +21,8 @@ from app.schemas.campaign import (
     AIDraftResponse,
     CampaignCreate,
     CampaignOut,
+    PreviewRequest,
+    PreviewResponse,
     SendRequest,
     SequenceCreate,
     SequenceStepCreate,
@@ -172,6 +174,43 @@ async def send_campaign(
 
     # TODO: enqueue Celery task — campaign_runner.send_campaign.delay(str(campaign_id))
     return {"status": "queued", "campaign_id": str(campaign_id)}
+
+
+@router.post("/{campaign_id}/preview", response_model=PreviewResponse)
+async def preview_campaign(
+    campaign_id: uuid.UUID,
+    body: PreviewRequest,
+    session: SessionDep,
+    _: CurrentUser,
+) -> PreviewResponse:
+    result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
+    c = result.scalar_one_or_none()
+    if not c:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Campaign not found")
+
+    replacements = {
+        "{first_name}": body.sample_first_name,
+        "{company}": body.sample_company,
+        "{unsubscribe_url}": "#unsubscribe-preview",
+    }
+
+    def interpolate(text: str) -> str:
+        for key, val in replacements.items():
+            text = text.replace(key, val)
+        return text
+
+    html_raw = c.email_body_html or f"<p>{c.email_body_text}</p>"
+    text_raw = c.email_body_text or ""
+    html_with_footer, text_with_footer = inject_footer(
+        html_body=interpolate(html_raw),
+        text_body=interpolate(text_raw),
+        unsubscribe_token="preview-token",
+    )
+    return PreviewResponse(
+        subject=interpolate(c.email_subject),
+        html=html_with_footer,
+        text=text_with_footer,
+    )
 
 
 @router.post("/{campaign_id}/test-send")
