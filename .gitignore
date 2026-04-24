@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.venv/
+venv/
+ENV/
+env/
+.mypy_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Environment — NEVER commit
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Frontend
+node_modules/
+dist/
+.next/
+out/
+*.tsbuildinfo
+
+# Docker
+.dockerignore
+
+# Logs
+*.log
+logs/
+
+# Reports (generated files)
+backend/reports/output/
+
+# Alembic (keep versions, ignore __pycache__)
+backend/migrations/versions/__pycache__/

@@ -1,0 +1,782 @@
+{
+  "forex_broker": {
+    "queries": [
+      "forex broker contact email site:linkedin.com",
+      "forex broker CEO email \"@\" -@gmail.com -@yahoo.com",
+      "MT4 MT5 broker \"contact us\" OR \"info@\" site:com",
+      "regulated forex broker \"email\" filetype:html",
+      "\"introducing broker\" forex email contact directory"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": ["https://www.financemagnates.com/feed/", "https://www.fxempire.com/feed"],
+    "difficulty": 3,
+    "expected_yield": 40
+  },
+  "crypto_exchange": {
+    "queries": [
+      "crypto exchange partnership email contact",
+      "\"exchange\" crypto \"business@\" OR \"partnerships@\" site:.com",
+      "cryptocurrency exchange listing contact email",
+      "DEX CEX exchange team email directory site:crunchbase.com",
+      "crypto exchange \"press@\" OR \"media@\" contact"
+    ],
+    "domain_patterns": ["*.com", "*.io", "*.exchange"],
+    "rss_feeds": ["https://cointelegraph.com/rss", "https://coindesk.com/feed"],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "stock_broker": {
+    "queries": [
+      "stock broker \"institutional@\" OR \"ib@\" contact email",
+      "online stock broker partnership contact directory",
+      "\"registered broker\" SEC FINRA email contact",
+      "equity broker \"head of\" OR \"director\" email site:linkedin.com",
+      "stock brokerage firm contact information email list"
+    ],
+    "domain_patterns": ["*.com", "*.co"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 25
+  },
+  "commodities_broker": {
+    "queries": [
+      "commodities futures broker contact email",
+      "\"FCM\" OR \"futures commission merchant\" email contact",
+      "energy commodities broker \"business development\" email",
+      "agricultural commodities broker directory email",
+      "metals trading broker contact email site:.com"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 20
+  },
+  "cfd_provider": {
+    "queries": [
+      "CFD provider \"contact\" email site:.com",
+      "\"contracts for difference\" platform email partnerships",
+      "spread betting CFD broker email list directory",
+      "FCA regulated CFD broker email contact",
+      "CFD white label provider contact email"
+    ],
+    "domain_patterns": ["*.com", "*.co.uk"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 35
+  },
+  "options_broker": {
+    "queries": [
+      "options broker contact email site:linkedin.com",
+      "options trading platform \"institutional\" email contact",
+      "binary options alternatives broker email list",
+      "listed options exchange member email contact",
+      "options market maker email contact directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 18
+  },
+  "multi_asset_broker": {
+    "queries": [
+      "multi-asset broker contact email partnership",
+      "\"stocks crypto forex\" broker email directory",
+      "all-in-one trading platform contact email",
+      "multi asset trading \"business@\" contact site:.com",
+      "diversified brokerage platform email list"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "defi_protocol": {
+    "queries": [
+      "DeFi protocol team email contact site:defipulse.com",
+      "\"DeFi\" protocol \"team@\" OR \"hello@\" contact",
+      "decentralized exchange liquidity partnership email",
+      "yield farming protocol email business contact",
+      "DeFi DAO governance email contact directory"
+    ],
+    "domain_patterns": ["*.io", "*.finance", "*.xyz"],
+    "rss_feeds": ["https://thedefiant.io/feed"],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "nft_marketplace": {
+    "queries": [
+      "NFT marketplace partnership email contact",
+      "NFT platform \"business@\" OR \"partnerships@\" contact",
+      "\"NFT marketplace\" creator contact email list",
+      "NFT auction platform email directory",
+      "digital collectibles marketplace team email"
+    ],
+    "domain_patterns": ["*.io", "*.com", "*.xyz"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 22
+  },
+  "prop_trading_firm": {
+    "queries": [
+      "proprietary trading firm email contact",
+      "\"prop firm\" challenge \"contact@\" OR \"support@\" email",
+      "funded trader program contact email site:.com",
+      "\"FTMO\" OR \"MyFundedFx\" OR \"TopstepTrader\" alternatives email",
+      "prop trading firm business development email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 45
+  },
+  "financial_news_outlet": {
+    "queries": [
+      "financial news website editor email contact",
+      "\"@bloomberg.com\" OR \"@reuters.com\" reporter email",
+      "financial journalist email directory site:muck-rack.com",
+      "finance media \"editorial@\" OR \"news@\" email contact",
+      "financial publication advertising contact email"
+    ],
+    "domain_patterns": ["*.com", "*.co.uk", "*.net"],
+    "rss_feeds": ["https://www.reuters.com/finance/rss", "https://feeds.bloomberg.com/markets/news.rss"],
+    "difficulty": 5,
+    "expected_yield": 15
+  },
+  "investment_newsletter": {
+    "queries": [
+      "investment newsletter author email site:substack.com",
+      "stock market newsletter writer contact email",
+      "\"subscribe\" investment newsletter editor email",
+      "financial newsletter advertise partnership email",
+      "investing newsletter \"reply to\" OR \"contact\" email"
+    ],
+    "domain_patterns": ["*.substack.com", "*.beehiiv.com", "*.ghost.io"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 55
+  },
+  "finance_podcast": {
+    "queries": [
+      "finance podcast host email contact site:podchaser.com",
+      "\"finance\" OR \"investing\" podcast \"contact@\" email",
+      "trading podcast guest booking email contact",
+      "financial podcast sponsorship email contact",
+      "money podcast \"hello@\" OR \"podcast@\" email directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 50
+  },
+  "youtube_finance": {
+    "queries": [
+      "finance youtube channel email \"business inquiries\" site:youtube.com",
+      "investing youtube creator contact email collaboration",
+      "\"business email\" youtube finance channel description",
+      "trading youtube channel sponsor contact email",
+      "financial education youtube \"contact me\" email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 60
+  },
+  "fintech_blog": {
+    "queries": [
+      "fintech blog author contact email site:.com",
+      "financial technology blog \"write for us\" OR \"advertise\" email",
+      "fintech blogger email directory outreach",
+      "\"fintech\" blog author \"contact@\" OR \"editor@\" email",
+      "personal finance blog advertise email contact"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 70
+  },
+  "financial_data_provider": {
+    "queries": [
+      "financial data vendor sales email contact",
+      "market data API provider \"sales@\" OR \"info@\" email",
+      "\"Bloomberg Terminal\" alternatives email contact",
+      "financial data feed vendor contact email directory",
+      "equity data provider partnership email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 20
+  },
+  "crypto_media": {
+    "queries": [
+      "crypto news site editor email contact site:muck-rack.com",
+      "blockchain media \"editorial@\" OR \"press@\" email",
+      "crypto magazine journalist email directory",
+      "\"coindesk\" OR \"cointelegraph\" writer email contact",
+      "web3 media publication advertising contact email"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": ["https://cointelegraph.com/rss", "https://coindesk.com/feed"],
+    "difficulty": 3,
+    "expected_yield": 35
+  },
+  "trade_publication": {
+    "queries": [
+      "fintech trade publication \"media kit\" email contact",
+      "B2B finance industry journal editor email",
+      "\"FX Week\" OR \"Risk Magazine\" contact email",
+      "capital markets trade publication advertising email",
+      "financial services trade press contact directory"
+    ],
+    "domain_patterns": ["*.com", "*.co.uk"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "price_comparison_media": {
+    "queries": [
+      "broker comparison website email contact",
+      "\"best forex brokers\" review site \"contact@\" email",
+      "forex broker review affiliate email partnership",
+      "financial product comparison site advertising email",
+      "investing platform review site contact email directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 50
+  },
+  "substack_writer": {
+    "queries": [
+      "site:substack.com finance investing author email",
+      "substack finance newsletter writer collaboration email",
+      "beehiiv financial newsletter author contact email",
+      "ghost.io finance blog author contact email",
+      "paid newsletter finance \"sponsor\" OR \"advertise\" email"
+    ],
+    "domain_patterns": ["*.substack.com", "*.beehiiv.com"],
+    "rss_feeds": [],
+    "difficulty": 1,
+    "expected_yield": 80
+  },
+  "forex_signal_provider": {
+    "queries": [
+      "forex signal provider contact email site:.com",
+      "trading signals subscription \"contact@\" OR \"support@\" email",
+      "\"forex signals\" telegram channel admin email",
+      "MT4 expert advisor signal provider email directory",
+      "copy trading signal provider partnership email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 60
+  },
+  "quant_research_firm": {
+    "queries": [
+      "quantitative research firm email contact site:linkedin.com",
+      "algorithmic trading research \"info@\" OR \"contact@\" email",
+      "quant finance firm business development email",
+      "systematic trading research email directory",
+      "CTA quantitative manager email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 5,
+    "expected_yield": 15
+  },
+  "market_research_firm": {
+    "queries": [
+      "market research firm \"sales@\" OR \"contact@\" email",
+      "financial market research vendor email list",
+      "consumer financial behavior research firm email",
+      "B2B research company contact email directory",
+      "\"market intelligence\" firm email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "trading_analytics_saas": {
+    "queries": [
+      "trading analytics software \"sales@\" OR \"demo@\" email",
+      "backtesting platform contact email partnership",
+      "portfolio analytics SaaS email directory",
+      "trade journaling software founder email",
+      "TradingView alternative analytics email contact"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 45
+  },
+  "risk_analytics_vendor": {
+    "queries": [
+      "risk management software vendor \"sales@\" email",
+      "enterprise risk analytics company email contact",
+      "\"value at risk\" software provider email directory",
+      "credit risk analytics vendor partnership email",
+      "operational risk management SaaS email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 20
+  },
+  "esg_research": {
+    "queries": [
+      "ESG research provider \"info@\" OR \"contact@\" email",
+      "sustainability ratings firm email directory",
+      "ESG data vendor partnership email contact",
+      "corporate governance research email list",
+      "impact investing research firm contact email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 18
+  },
+  "fintech_influencer": {
+    "queries": [
+      "fintech influencer email contact site:linkedin.com",
+      "\"fintech\" influencer \"business@\" OR \"collab@\" email",
+      "financial technology thought leader contact email",
+      "fintech speaker email directory site:speakerhub.com",
+      "fintech Twitter influencer email outreach"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 55
+  },
+  "crypto_influencer": {
+    "queries": [
+      "crypto influencer business email contact",
+      "\"crypto\" twitter influencer \"partnerships@\" email",
+      "bitcoin ethereum influencer contact collaboration email",
+      "web3 thought leader business email directory",
+      "crypto KOL key opinion leader email outreach"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 55
+  },
+  "linkedin_finance_creator": {
+    "queries": [
+      "site:linkedin.com finance creator \"contact\" email",
+      "LinkedIn top voice finance email contact",
+      "financial content creator LinkedIn email outreach",
+      "investing LinkedIn influencer partnership email",
+      "LinkedIn finance thought leader email directory"
+    ],
+    "domain_patterns": ["*.linkedin.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 65
+  },
+  "tiktok_trader": {
+    "queries": [
+      "TikTok finance creator business email contact",
+      "\"fintok\" OR \"stocktok\" creator email partnership",
+      "short form finance video creator email",
+      "Instagram Reels finance creator collaboration email",
+      "finance creator UGC email outreach directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 50
+  },
+  "forex_affiliate": {
+    "queries": [
+      "forex affiliate marketer email contact",
+      "forex affiliate network publisher email list",
+      "\"IB program\" forex affiliate contact email",
+      "CPA affiliate network finance email directory",
+      "forex review site affiliate partnership email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 65
+  },
+  "community_manager_finance": {
+    "queries": [
+      "trading Discord community admin email contact",
+      "finance Telegram group manager email",
+      "Reddit trading community moderator contact email",
+      "WhatsApp forex group admin email outreach",
+      "finance community manager email directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 60
+  },
+  "conference_speaker": {
+    "queries": [
+      "iFX EXPO speaker email contact site:ifxexpo.com",
+      "Money20/20 speaker email contact directory",
+      "Finovate speaker email contact list",
+      "finance conference keynote speaker email",
+      "\"speaking agent\" OR \"booking\" finance speaker email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "trading_academy": {
+    "queries": [
+      "online trading academy email contact \"info@\"",
+      "forex trading school contact email directory",
+      "proprietary trading academy enrollment email",
+      "trading education company \"admissions@\" email",
+      "learn to trade academy email partnership"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 50
+  },
+  "forex_course_creator": {
+    "queries": [
+      "site:udemy.com forex course instructor email",
+      "forex online course creator contact email",
+      "trading course seller email Gumroad Teachable",
+      "forex mentor email contact outreach",
+      "currency trading course author email"
+    ],
+    "domain_patterns": ["*.udemy.com", "*.teachable.com", "*.thinkific.com"],
+    "rss_feeds": [],
+    "difficulty": 1,
+    "expected_yield": 75
+  },
+  "university_finance_dept": {
+    "queries": [
+      "university finance department head email site:.edu",
+      "business school finance faculty email contact",
+      "economics department professor email list site:.edu",
+      "MBA finance program director email",
+      "university trading lab contact email"
+    ],
+    "domain_patterns": ["*.edu", "*.ac.uk"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "cfa_cpa_prep": {
+    "queries": [
+      "CFA exam prep provider \"contact@\" email",
+      "CPA preparation course company email directory",
+      "FRM exam preparation provider email contact",
+      "professional finance certification prep company email",
+      "CFA Level 1 course provider email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "bootcamp_fintech": {
+    "queries": [
+      "fintech bootcamp enrollment email contact",
+      "blockchain developer bootcamp \"admissions@\" email",
+      "coding bootcamp fintech track email contact",
+      "DeFi developer program email directory",
+      "web3 developer bootcamp contact email"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 40
+  },
+  "introducing_broker": {
+    "queries": [
+      "introducing broker IB program email contact",
+      "\"IB agreement\" forex broker email inquiry",
+      "white label forex broker introducing broker email",
+      "MT5 IB account manager email contact",
+      "forex partnership IB email directory"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 60
+  },
+  "prime_broker": {
+    "queries": [
+      "prime broker contact email hedge fund services",
+      "\"prime brokerage\" sales team email contact",
+      "institutional prime broker email directory",
+      "securities lending prime broker email contact",
+      "FX prime broker sales \"info@\" email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 5,
+    "expected_yield": 10
+  },
+  "financial_advisor_ria": {
+    "queries": [
+      "registered investment advisor email contact site:sec.gov",
+      "RIA firm \"advisor@\" OR \"info@\" email directory",
+      "independent financial advisor email outreach list",
+      "wealth management advisor email contact",
+      "fee-only financial planner email site:napfa.org"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "hedge_fund": {
+    "queries": [
+      "hedge fund IR email contact site:sec.gov",
+      "hedge fund manager email directory site:linkedin.com",
+      "macro hedge fund \"investor relations\" email",
+      "quant hedge fund email contact directory",
+      "alternative investment fund manager email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 5,
+    "expected_yield": 10
+  },
+  "private_equity": {
+    "queries": [
+      "private equity firm contact email site:linkedin.com",
+      "PE fund \"dealflow@\" OR \"info@\" email contact",
+      "growth equity firm email directory",
+      "venture capital fintech fund email contact",
+      "private equity portfolio company email outreach"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 5,
+    "expected_yield": 10
+  },
+  "family_office": {
+    "queries": [
+      "family office contact email site:linkedin.com",
+      "single family office investment email",
+      "multi-family office \"investments@\" email contact",
+      "family wealth office email directory",
+      "ultra high net worth family office email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 5,
+    "expected_yield": 8
+  },
+  "crypto_fund_vc": {
+    "queries": [
+      "crypto venture capital fund email contact",
+      "web3 VC firm \"dealflow@\" OR \"info@\" email",
+      "blockchain investment fund email directory",
+      "crypto fund manager email outreach site:linkedin.com",
+      "DeFi ecosystem fund email contact"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "asset_management_firm": {
+    "queries": [
+      "asset management firm \"institutional@\" email contact",
+      "ETF issuer email contact partnership",
+      "mutual fund manager email directory site:linkedin.com",
+      "fixed income asset manager email contact",
+      "alternative asset management firm email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 15
+  },
+  "corporate_treasury": {
+    "queries": [
+      "corporate treasurer email contact site:linkedin.com",
+      "\"VP Treasury\" OR \"Head of Treasury\" email contact",
+      "FX risk management corporate team email",
+      "treasury management department email directory",
+      "CFO treasury team email outreach"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 4,
+    "expected_yield": 15
+  },
+  "fx_tech_vendor": {
+    "queries": [
+      "FX technology vendor \"sales@\" OR \"info@\" email",
+      "trading platform provider email contact directory",
+      "MT4 MT5 white label provider email contact",
+      "liquidity bridge technology email contact",
+      "prime of prime FX technology email"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "payment_processor": {
+    "queries": [
+      "payment processor \"partnerships@\" OR \"sales@\" email",
+      "online payment gateway email contact directory",
+      "PSP payment service provider email outreach",
+      "BNPL payment company email contact",
+      "crypto payment processor email partnership"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "kyc_aml_vendor": {
+    "queries": [
+      "KYC vendor \"sales@\" OR \"info@\" email contact",
+      "AML compliance software vendor email directory",
+      "identity verification company email partnership",
+      "onboarding KYC SaaS email contact",
+      "biometric verification vendor email contact"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "regtech_firm": {
+    "queries": [
+      "regtech company email contact \"sales@\" directory",
+      "regulatory compliance software email partnership",
+      "MiFID reporting software vendor email",
+      "compliance automation SaaS email contact",
+      "GDPR compliance SaaS vendor email outreach"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "wealthtech_platform": {
+    "queries": [
+      "robo-advisor platform \"sales@\" OR \"info@\" email",
+      "digital wealth management platform email contact",
+      "portfolio rebalancing software email partnership",
+      "wealthtech SaaS email directory site:linkedin.com",
+      "automated investing platform email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "ecommerce_marketplace": {
+    "queries": [
+      "ecommerce marketplace \"partnerships@\" email contact",
+      "online marketplace vendor relations email",
+      "multi-vendor marketplace platform email directory",
+      "ecommerce platform \"merchant@\" OR \"sellers@\" email",
+      "B2C marketplace expansion email contact"
+    ],
+    "domain_patterns": ["*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 35
+  },
+  "d2c_brand": {
+    "queries": [
+      "D2C brand founder email site:linkedin.com",
+      "direct to consumer brand \"founder@\" OR \"hello@\" email",
+      "DTC ecommerce brand email outreach",
+      "consumer brand CEO email contact site:crunchbase.com",
+      "product brand \"partnerships@\" email contact"
+    ],
+    "domain_patterns": ["*.com", "*.co"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 50
+  },
+  "b2b_saas_startup": {
+    "queries": [
+      "B2B SaaS startup founder email site:crunchbase.com",
+      "SaaS company CEO email site:linkedin.com",
+      "\"seed\" OR \"Series A\" SaaS startup email contact",
+      "B2B software company \"hello@\" OR \"info@\" email",
+      "enterprise SaaS startup email outreach directory"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 2,
+    "expected_yield": 55
+  },
+  "neobank": {
+    "queries": [
+      "neobank \"partnerships@\" OR \"business@\" email contact",
+      "challenger bank email directory site:linkedin.com",
+      "digital bank founder email site:crunchbase.com",
+      "fintech bank email outreach B2B",
+      "mobile bank \"press@\" OR \"info@\" email contact"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  },
+  "insurtech": {
+    "queries": [
+      "insurtech company \"sales@\" OR \"info@\" email contact",
+      "digital insurance platform email directory",
+      "MGA insurtech founder email site:crunchbase.com",
+      "insurance technology company email outreach",
+      "embedded insurance platform email partnership"
+    ],
+    "domain_patterns": ["*.com", "*.io"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "trade_association": {
+    "queries": [
+      "financial trade association \"secretariat@\" OR \"info@\" email",
+      "chamber of commerce finance email contact directory",
+      "industry association membership email contact",
+      "FIA ISDA GFMA trade body email contact",
+      "fintech association email outreach"
+    ],
+    "domain_patterns": ["*.org", "*.com"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 25
+  },
+  "global_expansion_sea": {
+    "queries": [
+      "Southeast Asia fintech company email contact",
+      "Singapore Malaysia Indonesia fintech email directory",
+      "SEA financial services email outreach site:linkedin.com",
+      "Vietnam Thailand Philippines fintech partner email",
+      "ASEAN financial services email contact list"
+    ],
+    "domain_patterns": ["*.com", "*.sg", "*.my", "*.id"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 35
+  },
+  "global_expansion_mena": {
+    "queries": [
+      "MENA fintech company email contact directory",
+      "UAE Saudi Arabia Qatar fintech partner email",
+      "Middle East financial services email outreach",
+      "Dubai Abu Dhabi fintech company email",
+      "North Africa emerging market fintech email contact"
+    ],
+    "domain_patterns": ["*.com", "*.ae", "*.sa"],
+    "rss_feeds": [],
+    "difficulty": 3,
+    "expected_yield": 30
+  }
+}

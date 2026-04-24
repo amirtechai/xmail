@@ -1,0 +1,41 @@
+# Development override — mounts source code, enables hot reload, exposes debug ports
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  backend:
+    volumes:
+      - ./backend:/app
+    environment:
+      - APP_ENV=development
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    # Override read_only for dev (source mount needs write)
+    read_only: false
+
+  worker:
+    volumes:
+      - ./backend:/app
+    environment:
+      - APP_ENV=development
+      - LOG_LEVEL=DEBUG
+    command: celery -A app.tasks.celery_app worker --loglevel=debug --concurrency=2 --pool=solo
+
+  beat:
+    volumes:
+      - ./backend:/app
+    environment:
+      - APP_ENV=development
+
+  frontend:
+    # In dev, run Vite dev server instead of nginx build
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/api

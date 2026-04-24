@@ -1,0 +1,101 @@
+[project]
+name = "xmail"
+version = "0.1.0"
+description = "Agentic email outreach bot for PriceONN.com global expansion"
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi==0.115.0",
+    "uvicorn[standard]==0.34.0",
+    "pydantic[email]==2.10.0",
+    "pydantic-settings==2.5.0",
+    "sqlalchemy[asyncio]==2.0.36",
+    "asyncpg==0.31.0",
+    "alembic==1.14.0",
+    "langgraph==0.2.45",
+    "langchain-core==0.3.21",
+    "langchain-community==0.3.7",
+    "playwright==1.48.2",
+    "firecrawl-py==1.8.0",
+    "scrapy==2.12.0",
+    "celery[redis]==5.4.0",
+    "redis==5.2.1",
+    "flower==2.0.1",
+    "httpx==0.28.1",
+    "tenacity==9.0.0",
+    "aiosmtplib==3.1.2",
+    "dnspython==2.7.0",
+    "email-validator==2.2.0",
+    "structlog==24.4.0",
+    "python-json-logger==3.2.1",
+    "reportlab==4.2.5",
+    "lxml==5.3.0",
+    "defusedxml==0.7.1",
+    "bleach==6.2.0",
+    "python-jose[cryptography]==3.3.0",
+    "passlib[bcrypt]==1.7.4",
+    "cryptography==44.0.0",
+    "pgvector==0.4.0",
+    "openai==1.59.0",
+    "anthropic==0.34.2",
+    "groq==0.12.0",
+    "slowapi==0.1.9",
+    "pyotp==2.9.0",
+    "jinja2==3.1.5",
+    "prometheus-fastapi-instrumentator==7.0.2",
+    "prometheus-client==0.21.1",
+    "openpyxl==3.1.5",
+    "python-multipart==0.0.20",
+    "feedparser==6.0.11",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff==0.8.2",
+    "mypy==1.14.1",
+    "pytest==8.3.4",
+    "pytest-asyncio==0.25.4",
+    "pytest-cov==6.0.0",
+    "respx==0.21.1",
+    "aioresponses==0.7.6",
+    "testcontainers[postgres,redis]==4.9.0",
+    "httpx==0.28.1",
+    "bandit==1.8.0",
+    "pip-audit==2.8.0",
+    "types-passlib==1.7.7.20241221",
+    "types-redis==4.6.0.20241004",
+    "types-bleach==6.1.0.20240331",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "PT", "RET", "SIM"]
+ignore = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+addopts = "--cov=app --cov-report=term-missing"
+
+[tool.coverage.run]
+omit = ["tests/*", "migrations/*", "scripts/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@abstractmethod",
+]

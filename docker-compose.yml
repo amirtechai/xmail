@@ -1,0 +1,204 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: xmail-postgres
+    environment:
+      POSTGRES_USER: xmail_user
+      POSTGRES_PASSWORD: xmail_password
+      POSTGRES_DB: xmail_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    tmpfs:
+      - /var/run/postgresql
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xmail_user -d xmail_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - xmail-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: xmail-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis_data:/data
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    networks:
+      - xmail-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xmail-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xmail-worker
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - ./backend/.env
+    command: celery -A app.tasks.celery_app worker --loglevel=info --concurrency=4
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 1G
+
+  beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: xmail-beat
+    depends_on:
+      - redis
+      - postgres
+    env_file:
+      - ./backend/.env
+    command: celery -A app.tasks.celery_app beat --loglevel=info
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  flower:
+    image: mher/flower:2.0.1
+    container_name: xmail-flower
+    depends_on:
+      - redis
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    restart: unless-stopped
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    networks:
+      - xmail-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: xmail-frontend
+    ports:
+      - "3000:8080"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+    depends_on:
+      - backend
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: xmail-prometheus
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    ports:
+      - "9090:9090"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+    depends_on:
+      - backend
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: xmail-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=xmail-grafana-2024
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost:3001
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/xmail.json
+    ports:
+      - "3001:3000"
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - xmail-network
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  xmail-network:
+    driver: bridge

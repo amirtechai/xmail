@@ -1,0 +1,258 @@
+{
+  "id": null,
+  "uid": "xmail-overview",
+  "title": "Xmail — Operations Overview",
+  "tags": ["xmail"],
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-3h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Emails Sent (rate/min)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 0, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(xmail_emails_sent_total[5m]) * 60",
+          "legendFormat": "sent/min",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(xmail_emails_failed_total[5m]) * 60",
+          "legendFormat": "failed/min",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "lineWidth": 2 }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "failed/min" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#e74c3c", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 2,
+      "title": "Emails Sent — 24h Total",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "increase(xmail_emails_sent_total[24h])",
+          "legendFormat": "Sent",
+          "refId": "A"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "fixedColor": "#27ae60", "mode": "fixed" }, "unit": "short" } }
+    },
+    {
+      "id": 3,
+      "title": "Email Failures — 24h",
+      "type": "stat",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "increase(xmail_emails_failed_total[24h])",
+          "legendFormat": "Failed",
+          "refId": "A"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": { "defaults": { "color": { "fixedColor": "#e74c3c", "mode": "fixed" }, "unit": "short" } }
+    },
+    {
+      "id": 4,
+      "title": "Contacts Discovered — 24h",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "increase(xmail_contacts_discovered_total[24h])",
+          "legendFormat": "Discovered",
+          "refId": "A"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 5,
+      "title": "Bot Runs — 24h",
+      "type": "stat",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "increase(xmail_bot_runs_total[24h])",
+          "legendFormat": "{{run_type}} / {{result}}",
+          "refId": "A"
+        }
+      ],
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "short" } }
+    },
+    {
+      "id": 6,
+      "title": "Email Send Latency (p50/p95/p99)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 4, "w": 16, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, rate(xmail_email_send_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(xmail_email_send_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.99, rate(xmail_email_send_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99",
+          "refId": "C"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 7,
+      "title": "HTTP Request Rate (rate/sec)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(http_requests_total{job=\"xmail-backend\"}[5m])",
+          "legendFormat": "{{method}} {{handler}} {{status_code}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "reqps", "custom": { "lineWidth": 1 } } },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] } }
+    },
+    {
+      "id": 8,
+      "title": "HTTP Request Latency p95 by Handler",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"xmail-backend\"}[5m])) by (handler, le))",
+          "legendFormat": "{{handler}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean"] } }
+    },
+    {
+      "id": 9,
+      "title": "Campaigns by Status",
+      "type": "piechart",
+      "gridPos": { "x": 0, "y": 16, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "xmail_campaigns_by_status",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ],
+      "options": { "pieType": "donut", "legend": { "displayMode": "table", "placement": "right" } }
+    },
+    {
+      "id": 10,
+      "title": "Login Attempts",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 16, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(xmail_login_attempts_total[5m]) * 60",
+          "legendFormat": "{{result}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "custom": { "lineWidth": 2 } },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "failure" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#e74c3c", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "locked" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "#e67e22", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 11,
+      "title": "Bot Run Duration (p95)",
+      "type": "timeseries",
+      "gridPos": { "x": 16, "y": 16, "w": 8, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(xmail_bot_run_duration_seconds_bucket[10m]))",
+          "legendFormat": "p95 duration",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "lineWidth": 2 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 12,
+      "title": "Suppressed Contacts Added",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 24, "w": 12, "h": 6 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(xmail_contacts_suppressed_total[5m]) * 60",
+          "legendFormat": "{{reason}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 1 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    },
+    {
+      "id": 13,
+      "title": "Celery Queue Depth",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 24, "w": 12, "h": 6 },
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "xmail_celery_queue_depth",
+          "legendFormat": "{{queue}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "short", "custom": { "lineWidth": 2, "fillOpacity": 10 } } },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } }
+    }
+  ]
+}

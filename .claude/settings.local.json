@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp backend/.env.example backend/.env)",
+      "Bash(python3 -m pytest tests/core/ -v --no-header --no-cov)",
+      "Bash(ENV_FILE=.env.test python3 -m pytest tests/core/ -v --no-header --no-cov)",
+      "Bash(ENV_FILE=.env.test python3 -m pytest tests/core/ -v --no-header)",
+      "Bash(ENV_FILE=.env.test python3 -m pytest tests/api/test_health.py -v --no-header)",
+      "Bash(npx tsc *)",
+      "Bash(python3 -c \"import sys,yaml; yaml.safe_load\\(sys.stdin\\); print\\('YAML valid'\\)\")"
+    ]
+  }
+}
