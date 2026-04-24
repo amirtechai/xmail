@@ -23,6 +23,7 @@ import {
   YAxis,
 } from 'recharts'
 import { campaignsApi, type CampaignStats, type RecipientRow, type Sequence, type SequenceStep } from '../lib/api'
+import { SpamScoreWidget } from '../components/SpamScoreWidget'
 
 const STATUS_COLORS: Record<string, string> = {
   queued: 'badge-muted',
@@ -628,6 +629,7 @@ export default function CampaignDetailPage() {
           <h1 className="text-base font-semibold text-text-primary">{stats.name}</h1>
           <div className="text-xs text-text-muted">{id?.slice(0, 8)}… · {stats.status}</div>
         </div>
+        {id && <SpamScoreWidget campaignId={id} />}
         <button
           className="btn-secondary flex items-center gap-1.5 text-sm px-3 py-1.5"
           onClick={() => setShowPreview(true)}

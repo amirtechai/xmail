@@ -31,6 +31,7 @@ from app.schemas.campaign import (
     TestSendRequest,
 )
 from app.core.security import sanitize_html
+from app.core.spam_checker import check_spam
 from app.sender.compliance import inject_compliance_footer as inject_footer
 from app.sender.smtp_client import SMTPClient
 
@@ -211,6 +212,40 @@ async def preview_campaign(
         html=html_with_footer,
         text=text_with_footer,
     )
+
+
+@router.post("/{campaign_id}/spam-check")
+async def spam_check(
+    campaign_id: uuid.UUID,
+    session: SessionDep,
+    _: CurrentUser,
+) -> dict:
+    result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
+    c = result.scalar_one_or_none()
+    if not c:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Campaign not found")
+
+    try:
+        spam = await check_spam(
+            subject=c.email_subject or "",
+            html_body=c.email_body_html or "",
+            text_body=c.email_body_text or "",
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_502_BAD_GATEWAY,
+            detail=f"Spam check service unavailable: {exc}",
+        ) from exc
+
+    return {
+        "score": spam.score,
+        "label": spam.label,
+        "rules": [
+            {"name": r.name, "description": r.description, "score": r.score}
+            for r in spam.rules
+            if r.score != 0
+        ],
+    }
 
 
 @router.post("/{campaign_id}/test-send")

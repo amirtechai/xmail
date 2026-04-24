@@ -601,6 +601,11 @@ export const campaignsApi = {
       scheduled_at: scheduledAt ?? null,
       batch_size_per_hour: batchSize ?? null,
     }),
+  spamCheck: (id: string) =>
+    api.post<{ score: number; label: string; rules: { name: string; description: string; score: number }[] }>(
+      `/campaigns/${id}/spam-check`,
+      {},
+    ),
   preview: (id: string, sampleFirstName = 'Alex', sampleCompany = 'Acme Corp') =>
     api.post<{ subject: string; html: string; text: string }>(`/campaigns/${id}/preview`, {
       sample_first_name: sampleFirstName,

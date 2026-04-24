@@ -5,7 +5,7 @@
 ## Durum Özeti
 - Başlangıç: 2026-04-22
 - Son güncelleme: 2026-04-24
-- Tamamlanan: 6/12
+- Tamamlanan: 8/12
 
 ---
 
@@ -102,7 +102,7 @@
 
 ---
 
-## G — Email Preview / Test Send [ ]
+## G — Email Preview / Test Send [x]
 **Dosyalar:**
 - `backend/app/api/routes/campaigns.py` (preview endpoint)
 - `frontend/src/pages/CampaignDetailPage.tsx` (test send butonu)
@@ -114,7 +114,7 @@
 
 ---
 
-## H — Spam Score Checker [ ]
+## H — Spam Score Checker [x]
 **Dosyalar:**
 - `backend/app/core/spam_checker.py` (YENİ)
 - `backend/app/api/routes/campaigns.py` (spam-check endpoint)
