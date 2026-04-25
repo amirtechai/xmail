@@ -45,5 +45,7 @@ class SentEmail(Base):
     click_events: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
     # Set when this email is a follow-up sequence step (NULL = initial campaign send)
     sequence_step_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    # 'A' or 'B' when A/B testing is active; NULL otherwise
+    ab_variant: Mapped[str | None] = mapped_column(String(1), nullable=True)
 
     __table_args__ = (Index("ix_sent_email_campaign_status", "campaign_id", "status"),)

@@ -173,7 +173,8 @@ async def send_campaign(
     c.attachments_metadata = meta
     await session.commit()
 
-    # TODO: enqueue Celery task — campaign_runner.send_campaign.delay(str(campaign_id))
+    from app.tasks.campaign_runner import send_campaign
+    send_campaign.delay(str(campaign_id))
     return {"status": "queued", "campaign_id": str(campaign_id)}
 
 
@@ -429,38 +430,35 @@ async def campaign_stats(
     subject_b = meta.get("email_subject_b")
     ab_results = None
     if subject_b:
-        ab_a = await session.execute(
-            select(func.count()).where(
-                SentEmail.campaign_id == campaign_id,
-                SentEmail.subject == c.email_subject,
-                SentEmail.status.in_([
-                    SentEmailStatus.OPENED.value,
-                    SentEmailStatus.CLICKED.value,
-                    SentEmailStatus.REPLIED.value,
-                ]),
-            )
-        )
-        ab_b = await session.execute(
-            select(func.count()).where(
-                SentEmail.campaign_id == campaign_id,
-                SentEmail.subject == subject_b,
-                SentEmail.status.in_([
-                    SentEmailStatus.OPENED.value,
-                    SentEmailStatus.CLICKED.value,
-                    SentEmailStatus.REPLIED.value,
-                ]),
-            )
-        )
+        opened_statuses = [
+            SentEmailStatus.OPENED.value,
+            SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+        ]
         ab_a_total = await session.execute(
             select(func.count()).where(
                 SentEmail.campaign_id == campaign_id,
-                SentEmail.subject == c.email_subject,
+                SentEmail.ab_variant == "A",
             )
         )
         ab_b_total = await session.execute(
             select(func.count()).where(
                 SentEmail.campaign_id == campaign_id,
-                SentEmail.subject == subject_b,
+                SentEmail.ab_variant == "B",
+            )
+        )
+        ab_a_opened = await session.execute(
+            select(func.count()).where(
+                SentEmail.campaign_id == campaign_id,
+                SentEmail.ab_variant == "A",
+                SentEmail.status.in_(opened_statuses),
+            )
+        )
+        ab_b_opened = await session.execute(
+            select(func.count()).where(
+                SentEmail.campaign_id == campaign_id,
+                SentEmail.ab_variant == "B",
+                SentEmail.status.in_(opened_statuses),
             )
         )
         ab_results = {
@@ -468,8 +466,8 @@ async def campaign_stats(
             "subject_b": subject_b,
             "a_sent": ab_a_total.scalar_one(),
             "b_sent": ab_b_total.scalar_one(),
-            "a_opened": ab_a.scalar_one(),
-            "b_opened": ab_b.scalar_one(),
+            "a_opened": ab_a_opened.scalar_one(),
+            "b_opened": ab_b_opened.scalar_one(),
         }
 
     return {
