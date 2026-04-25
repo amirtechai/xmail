@@ -43,10 +43,22 @@ class Settings(BaseSettings):
     daily_report_hour: int = Field(default=9)
     daily_report_minute: int = Field(default=0)
 
+    # LLM Providers
+    groq_api_key: str = Field(default="")
+    openrouter_api_key: str = Field(default="")
+    openai_api_key: str = Field(default="")
+    anthropic_api_key: str = Field(default="")
+
     # Third-party enrichment / verification
     zerobounce_api_key: str = Field(default="")
     hunter_api_key: str = Field(default="")
     proxycurl_api_key: str = Field(default="")
+    serpapi_api_key: str = Field(default="")
+    finnhub_api_key: str = Field(default="")
+
+    # Agent memory
+    zep_api_key: str = Field(default="")
+    zep_account_id: str = Field(default="")
 
     # Scraping
     firecrawl_api_key: str = Field(default="")

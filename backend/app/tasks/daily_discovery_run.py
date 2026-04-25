@@ -1,11 +1,11 @@
 """Periodic discovery cycle task."""
 
 import asyncio
-import logging
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.daily_discovery_run.run_discovery_cycle", bind=True)
@@ -23,16 +23,11 @@ async def _run() -> dict:
         result = await session.execute(select(BotState).where(BotState.id == 1))
         state = result.scalar_one_or_none()
 
-        if not state or state.state != BotStateEnum.RUNNING:
+        if not state or state.state not in (BotStateEnum.DISCOVERING, BotStateEnum.SENDING):
             logger.info("discovery_skipped", reason="bot_not_running")
             return {"skipped": True, "reason": "bot_not_running"}
 
-    # Import here to avoid circular imports at module load
-    from app.agents.runner import run_discovery
-
     logger.info("discovery_cycle_started")
-    # run_discovery expects a campaign_id and audience_type — here we trigger
-    # for all campaigns that are in RUNNING state
     ran = await _dispatch_campaigns()
     logger.info("discovery_cycle_done", campaigns_dispatched=ran)
     return {"campaigns_dispatched": ran}
@@ -45,7 +40,7 @@ async def _dispatch_campaigns() -> int:
 
     async with async_session_factory() as session:
         result = await session.execute(
-            select(Campaign).where(Campaign.status == CampaignStatus.RUNNING)
+            select(Campaign).where(Campaign.status == CampaignStatus.SEARCHING)
         )
         campaigns = result.scalars().all()
 
@@ -61,17 +56,43 @@ def run_campaign_discovery(self, campaign_id: str) -> dict:  # type: ignore[over
 
 
 async def _run_campaign(campaign_id: str) -> dict:
+    import uuid as _uuid
+
     from app.agents.runner import run_discovery
     from app.database import async_session_factory, get_redis
+    from app.models.campaign import Campaign
+    from app.models.target_audience_type import TargetAudienceType
+    from sqlalchemy import select
 
     async with async_session_factory() as session:
         redis = await get_redis()
         try:
-            result = await run_discovery(
-                campaign_id=campaign_id,
-                session=session,
-                redis=redis,
+            result = await session.execute(
+                select(Campaign).where(Campaign.id == _uuid.UUID(campaign_id))
             )
-            return result
+            campaign = result.scalar_one_or_none()
+            if not campaign:
+                logger.warning("campaign_not_found", campaign_id=campaign_id)
+                return {"error": "campaign_not_found"}
+
+            # Resolve audience labels for the search planner
+            audience_keys = campaign.target_audience_type_ids or []
+            audience_labels: list[str] = []
+            if audience_keys:
+                aud_result = await session.execute(
+                    select(TargetAudienceType).where(TargetAudienceType.key.in_(audience_keys))
+                )
+                audience_labels = [a.label_en for a in aud_result.scalars().all()]
+
+            audience_type = audience_labels[0] if audience_labels else (audience_keys[0] if audience_keys else "general")
+            run = await run_discovery(
+                campaign_id=campaign_id,
+                audience_type=audience_type,
+                audience_keywords=audience_labels or audience_keys,
+                target_count=100,
+                session=session,
+                redis_client=redis,
+            )
+            return {"run_id": str(run.id), "status": run.status}
         finally:
             await redis.aclose()

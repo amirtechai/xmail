@@ -4,6 +4,7 @@ from app.database import Base
 from app.models.agent_memory import AgentMemory
 from app.models.agent_run import AgentRun, RunStatus, RunType
 from app.models.audit_log import AuditLog
+from app.models.bot_config import BotConfig
 from app.models.bot_state import BotState, BotStateEnum
 from app.models.campaign import Campaign, CampaignStatus
 from app.models.campaign_sequence import CampaignSequence
@@ -47,6 +48,7 @@ __all__ = [
     "DailyReport",
     "ScrapingSource",
     "SourceType",
+    "BotConfig",
     "BotState",
     "BotStateEnum",
 ]

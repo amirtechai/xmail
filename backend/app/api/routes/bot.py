@@ -137,9 +137,8 @@ async def run_bot(body: RunRequest, session: SessionDep, _: AdminUser) -> dict:
         bot.is_running = True
         await session.commit()
 
-    # TODO: enqueue Celery discovery task here
-    # from app.tasks.discovery import run_discovery_task
-    # run_discovery_task.delay(dry_run=body.dry_run or cfg.dry_run)
+        from app.tasks.daily_discovery_run import run_discovery_cycle
+        run_discovery_cycle.delay()
 
     return {
         "message": "Run started" if not body.dry_run else "Dry run queued",

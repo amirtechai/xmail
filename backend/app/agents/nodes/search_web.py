@@ -1,4 +1,4 @@
-"""Search web node — executes search queries via Firecrawl or DuckDuckGo."""
+"""Search web node — executes search queries via SerpAPI, Firecrawl, or DuckDuckGo."""
 
 import httpx
 
@@ -9,7 +9,25 @@ from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 _DDG_API = "https://api.duckduckgo.com/"
+_SERP_API = "https://serpapi.com/search"
 _MAX_URLS_PER_QUERY = 10
+
+
+async def _serp_search(query: str, api_key: str) -> list[str]:
+    """Google search via SerpAPI — best quality results."""
+    async with httpx.AsyncClient(timeout=30) as client:
+        resp = await client.get(
+            _SERP_API,
+            params={
+                "q": query,
+                "api_key": api_key,
+                "engine": "google",
+                "num": str(_MAX_URLS_PER_QUERY),
+            },
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return [r["link"] for r in data.get("organic_results", []) if r.get("link")]
 
 
 async def _firecrawl_search(query: str, api_key: str) -> list[str]:
@@ -44,7 +62,9 @@ async def search_web_node(state: XmailState) -> dict:
 
     for query in queries:
         try:
-            if settings.firecrawl_api_key:
+            if settings.serpapi_api_key:
+                urls = await _serp_search(query, settings.serpapi_api_key)
+            elif settings.firecrawl_api_key:
                 urls = await _firecrawl_search(query, settings.firecrawl_api_key)
             else:
                 urls = await _ddg_search(query)

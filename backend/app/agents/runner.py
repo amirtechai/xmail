@@ -7,11 +7,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.agents.graph import build_graph
 from app.agents.state import XmailState
+from app.config import settings
 from app.core.logger import get_logger
+from app.llm.base import BaseLLMProvider
 from app.llm.router import build_provider
 from app.models.agent_run import AgentRun, RunStatus, RunType
 
 logger = get_logger(__name__)
+
+
+def _build_env_llm_provider() -> BaseLLMProvider | None:
+    """Fallback: build LLM provider from env when no DB config is set."""
+    if settings.groq_api_key:
+        from app.llm.providers.groq import GroqProvider
+        return GroqProvider(api_key=settings.groq_api_key, model="llama-3.3-70b-versatile")
+    if settings.openrouter_api_key:
+        from app.llm.providers.openrouter import OpenRouterProvider
+        return OpenRouterProvider(
+            api_key=settings.openrouter_api_key,
+            model="meta-llama/llama-3.3-70b-instruct",
+        )
+    return None
 
 
 async def run_discovery(
@@ -19,9 +35,9 @@ async def run_discovery(
     audience_type: str,
     audience_keywords: list[str],
     target_count: int,
-    llm_config,
     session: AsyncSession,
     redis_client,
+    llm_config=None,
 ) -> AgentRun:
     run = AgentRun(
         id=uuid.uuid4(),
@@ -53,7 +69,12 @@ async def run_discovery(
     }
 
     try:
-        llm_provider = build_provider(llm_config)
+        if llm_config is not None:
+            llm_provider = build_provider(llm_config)
+        else:
+            llm_provider = _build_env_llm_provider()
+            if llm_provider is None:
+                raise ValueError("No LLM provider configured. Set GROQ_API_KEY or OPENROUTER_API_KEY.")
         compiled = build_graph(llm_provider, session, redis_client)
         config = {"configurable": {"thread_id": run.langgraph_thread_id}}
         final_state = await compiled.ainvoke(initial_state, config=config)
