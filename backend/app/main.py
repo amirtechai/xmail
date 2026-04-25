@@ -94,6 +94,7 @@ def create_app() -> FastAPI:
     from app.api.routes.stats import router as stats_router
     from app.api.routes.suppression import router as suppression_router
     from app.api.routes.unsubscribe import router as unsubscribe_router
+    from app.api.routes.webhooks import router as webhooks_router
 
     app.include_router(auth_router, prefix="/api")
     app.include_router(campaigns_router, prefix="/api")
@@ -108,6 +109,7 @@ def create_app() -> FastAPI:
     app.include_router(stats_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
     app.include_router(unsubscribe_router)
+    app.include_router(webhooks_router, prefix="/api")
 
     # Prometheus metrics — exposed at /metrics (internal use only, no auth)
     Instrumentator(

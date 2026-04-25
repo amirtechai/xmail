@@ -68,7 +68,7 @@ export default api
 export interface User {
   id: string
   email: string
-  role: 'admin' | 'viewer'
+  role: 'admin' | 'operator' | 'viewer'
   is_active: boolean
   created_at: string
 }
@@ -499,6 +499,25 @@ export const contactsApi = {
     const qs = new URLSearchParams({ fmt, ...Object.fromEntries(Object.entries(params).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)])) })
     return `${BASE_URL}/contacts/export?${qs.toString()}`
   },
+  enrichLinkedin: (id: string) =>
+    api.post<Contact>(`/contacts/${id}/enrich-linkedin`, {}),
+}
+
+export interface UserCreate {
+  email: string
+  password: string
+  role: 'admin' | 'operator' | 'viewer'
+}
+
+export interface UserUpdate {
+  role?: 'admin' | 'operator' | 'viewer'
+  is_active?: boolean
+}
+
+export const usersApi = {
+  list: () => api.get<User[]>('/auth/users'),
+  create: (data: UserCreate) => api.post<User>('/auth/users', data),
+  updateUser: (id: string, data: UserUpdate) => api.patch<User>(`/auth/users/${id}`, data),
 }
 
 export const reportsApi = {

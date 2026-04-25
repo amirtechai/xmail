@@ -5,7 +5,7 @@
 ## Durum Özeti
 - Başlangıç: 2026-04-22
 - Son güncelleme: 2026-04-24
-- Tamamlanan: 8/12
+- Tamamlanan: 12/12
 
 ---
 
@@ -127,7 +127,7 @@
 
 ---
 
-## I — A/B Subject Line Testing [ ]
+## I — A/B Subject Line Testing [x]
 **Dosyalar:**
 - `backend/app/models/campaign.py` (ab_enabled, subject_b)
 - `backend/app/models/sent_email.py` (ab_variant)
@@ -142,7 +142,7 @@
 
 ---
 
-## J — LinkedIn Enrichment (Proxycurl API) [ ]
+## J — LinkedIn Enrichment (Proxycurl API) [x]
 **Dosyalar:**
 - `backend/app/scrapers/proxycurl_client.py` (YENİ)
 - `backend/app/agents/nodes/linkedin_enrich.py` (YENİ)
@@ -158,7 +158,7 @@
 
 ---
 
-## K — RBAC (Viewer / Operator Rolleri) [ ]
+## K — RBAC (Viewer / Operator Rolleri) [x]
 **Dosyalar:**
 - `backend/app/models/user.py` (UserRole enum güncelle)
 - `backend/app/api/deps.py` (role check helpers)
@@ -174,7 +174,7 @@
 
 ---
 
-## L — Webhook Receiver (Bounce/Open/Click) [ ]
+## L — Webhook Receiver (Bounce/Open/Click) [x]
 **Dosyalar:**
 - `backend/app/api/routes/webhooks.py` (YENİ)
 - `backend/app/tasks/webhook_processor.py` (YENİ)

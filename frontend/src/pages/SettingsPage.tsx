@@ -4,6 +4,7 @@ import {
   CheckCircle,
   ChevronDown,
   ChevronRight,
+  Copy,
   KeyRound,
   Mail,
   Plus,
@@ -13,6 +14,7 @@ import {
   Shield,
   ShieldCheck,
   Trash2,
+  Webhook,
   XCircle,
   Zap,
 } from 'lucide-react'
@@ -32,7 +34,7 @@ import {
 
 // ── Shared ───────────────────────────────────────────────────────────────────
 
-type Tab = 'llm' | 'smtp' | 'audience' | 'compliance' | 'security' | 'general'
+type Tab = 'llm' | 'smtp' | 'audience' | 'compliance' | 'security' | 'general' | 'webhooks'
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'llm', label: 'LLM Providers', icon: Bot },
@@ -41,6 +43,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: 'compliance', label: 'Compliance', icon: Shield },
   { id: 'security', label: 'Security', icon: ShieldCheck },
   { id: 'general', label: 'General', icon: Server },
+  { id: 'webhooks', label: 'Webhooks', icon: Webhook },
 ]
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
@@ -975,6 +978,81 @@ function GeneralTab() {
   )
 }
 
+// ── Webhooks tab ─────────────────────────────────────────────────────────────
+
+const WEBHOOK_PROVIDERS = [
+  {
+    id: 'sendgrid',
+    name: 'SendGrid',
+    path: '/api/webhooks/sendgrid',
+    events: 'bounce, open, click, unsubscribe, spam_report',
+    note: 'Use Event Webhook in SendGrid dashboard. Paste the public key from SendGrid into SENDGRID_WEBHOOK_PUBLIC_KEY env var.',
+  },
+  {
+    id: 'postmark',
+    name: 'Postmark',
+    path: '/api/webhooks/postmark',
+    events: 'bounce, open, click, subscription',
+    note: 'Set a shared secret in Postmark → Servers → Webhooks and copy it to POSTMARK_WEBHOOK_TOKEN env var.',
+  },
+  {
+    id: 'mailgun',
+    name: 'Mailgun',
+    path: '/api/webhooks/mailgun',
+    events: 'bounce (failed), open, click, unsubscribe, complaint',
+    note: 'Copy your HTTP webhook signing key from Mailgun → Sending → Webhooks to MAILGUN_WEBHOOK_SIGNING_KEY env var.',
+  },
+]
+
+function WebhooksTab() {
+  const [copied, setCopied] = useState<string | null>(null)
+
+  const copy = (text: string, id: string) => {
+    void navigator.clipboard.writeText(text)
+    setCopied(id)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const baseUrl = window.location.origin
+
+  return (
+    <SectionCard title="Webhook Endpoints">
+      <p className="text-xs text-text-muted">
+        Point your email provider's webhook to the URL below. Xmail validates signatures using the
+        corresponding env var — leave it blank during local development to skip verification.
+      </p>
+      <div className="space-y-4 mt-2">
+        {WEBHOOK_PROVIDERS.map(({ id, name, path, events, note }) => {
+          const url = `${baseUrl}${path}`
+          return (
+            <div key={id} className="border border-border rounded-lg p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-text-primary">{name}</span>
+                <span className="text-xs text-text-muted font-mono">{events}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={url}
+                  className="input flex-1 text-xs font-mono bg-bg-tertiary"
+                />
+                <button
+                  className="btn-secondary flex items-center gap-1 px-2 py-1.5 text-xs"
+                  onClick={() => copy(url, id)}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copied === id ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+              <p className="text-xs text-text-muted">{note}</p>
+            </div>
+          )
+        })}
+      </div>
+    </SectionCard>
+  )
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function SettingsPage() {
@@ -1010,6 +1088,7 @@ export default function SettingsPage() {
         {tab === 'compliance' && <ComplianceTab />}
         {tab === 'security' && <SecurityTab />}
         {tab === 'general' && <GeneralTab />}
+        {tab === 'webhooks' && <WebhooksTab />}
       </div>
     </div>
   )

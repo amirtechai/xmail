@@ -14,6 +14,7 @@ import CampaignsPage from './pages/CampaignsPage'
 import ComposePage from './pages/ComposePage'
 import LogsPage from './pages/LogsPage'
 import SettingsPage from './pages/SettingsPage'
+import UsersPage from './pages/UsersPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const user = useAuth((s) => s.user)
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="/suppression" element={<SuppressionPage />} />
           <Route path="/logs" element={<LogsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/admin/users" element={<UsersPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

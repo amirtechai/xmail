@@ -11,23 +11,41 @@ import {
   PenLine,
   Megaphone,
   ScrollText,
+  UserCog,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { botApi, type BotStatus } from '../lib/api'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 
-const NAV = [
-  { to: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard',   key: 'DASH' },
-  { to: '/bot',        icon: Bot,             label: 'Bot Control',  key: 'BOT'  },
-  { to: '/campaigns',  icon: Megaphone,       label: 'Campaigns',    key: 'CAMP' },
-  { to: '/compose',    icon: PenLine,         label: 'Compose',      key: 'COMP' },
-  { to: '/contacts',   icon: Users,           label: 'Contacts',     key: 'CTCT' },
-  { to: '/reports',    icon: FileText,        label: 'Reports',      key: 'RPTS' },
-  { to: '/suppression',icon: Ban,             label: 'Suppression',  key: 'SUPR' },
-  { to: '/logs',       icon: ScrollText,      label: 'Logs',         key: 'LOGS' },
-  { to: '/settings',   icon: Settings,        label: 'Settings',     key: 'CFG'  },
-] as const
+type NavRole = 'all' | 'operator' | 'admin'
+
+const NAV: { to: string; icon: React.FC<{ className?: string }>; label: string; key: string; minRole: NavRole }[] = [
+  { to: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard',   key: 'DASH', minRole: 'all'      },
+  { to: '/bot',         icon: Bot,             label: 'Bot Control', key: 'BOT',  minRole: 'operator' },
+  { to: '/campaigns',   icon: Megaphone,       label: 'Campaigns',   key: 'CAMP', minRole: 'all'      },
+  { to: '/compose',     icon: PenLine,         label: 'Compose',     key: 'COMP', minRole: 'operator' },
+  { to: '/contacts',    icon: Users,           label: 'Contacts',    key: 'CTCT', minRole: 'all'      },
+  { to: '/reports',     icon: FileText,        label: 'Reports',     key: 'RPTS', minRole: 'all'      },
+  { to: '/suppression', icon: Ban,             label: 'Suppression', key: 'SUPR', minRole: 'operator' },
+  { to: '/logs',        icon: ScrollText,      label: 'Logs',        key: 'LOGS', minRole: 'all'      },
+  { to: '/settings',    icon: Settings,        label: 'Settings',    key: 'CFG',  minRole: 'operator' },
+  { to: '/admin/users', icon: UserCog,         label: 'Users',       key: 'USR',  minRole: 'admin'    },
+]
+
+const ROLE_ORDER: Record<string, number> = { admin: 3, operator: 2, viewer: 1 }
+
+function canSeeNav(userRole: string | undefined, minRole: NavRole): boolean {
+  if (minRole === 'all') return true
+  const rank = ROLE_ORDER[userRole ?? 'viewer'] ?? 1
+  return rank >= (ROLE_ORDER[minRole] ?? 1)
+}
+
+const ROLE_BADGE: Record<string, string> = {
+  admin:    'bg-accent-red/10 text-accent-red border-accent-red',
+  operator: 'bg-accent-yellow/10 text-accent-yellow border-accent-yellow',
+  viewer:   'bg-border text-text-muted border-border',
+}
 
 function Clock() {
   const [time, setTime] = useState(() => new Date().toUTCString().slice(17, 25))
@@ -111,7 +129,7 @@ export default function Layout() {
           </div>
 
           <nav className="flex-1 py-1">
-            {NAV.map(({ to, icon: Icon, label, key }) => (
+            {NAV.filter(({ minRole }) => canSeeNav(user?.role, minRole)).map(({ to, icon: Icon, label, key }) => (
               <NavLink
                 key={to}
                 to={to}
@@ -142,8 +160,16 @@ export default function Layout() {
             ))}
           </nav>
 
-          <div className="border-t border-border px-3 py-2">
+          <div className="border-t border-border px-3 py-2 space-y-1">
             <div className="font-mono text-[9px] text-text-muted truncate">{user?.email}</div>
+            {user?.role && (
+              <span className={clsx(
+                'inline-block font-mono text-[9px] px-1.5 py-0.5 rounded border tracking-widest uppercase',
+                ROLE_BADGE[user.role] ?? ROLE_BADGE.viewer,
+              )}>
+                {user.role}
+              </span>
+            )}
           </div>
         </aside>
 

@@ -5,6 +5,7 @@ import {
   ChevronsUpDown,
   Download,
   ExternalLink,
+  Linkedin,
   Pencil,
   Search,
   Trash2,
@@ -360,6 +361,7 @@ export default function ContactsPage() {
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [editContact, setEditContact] = useState<Contact | null>(null)
   const [showImport, setShowImport] = useState(false)
+  const [enrichingId, setEnrichingId] = useState<string | null>(null)
 
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -438,6 +440,16 @@ export default function ContactsPage() {
     const { data } = await contactsApi.update(id, patch)
     setContacts((prev) => prev.map((c) => (c.id === id ? data : c)))
     setEditContact(null)
+  }
+
+  const handleEnrichLinkedin = async (id: string) => {
+    setEnrichingId(id)
+    try {
+      const { data } = await contactsApi.enrichLinkedin(id)
+      setContacts((prev) => prev.map((c) => (c.id === id ? data : c)))
+    } finally {
+      setEnrichingId(null)
+    }
   }
 
   const totalPages = Math.ceil(total / PAGE_SIZE)
@@ -641,7 +653,17 @@ export default function ContactsPage() {
                         {c.verified_status}
                       </span>
                     </td>
-                    <td className="py-2 text-right">
+                    <td className="py-2 text-right whitespace-nowrap">
+                      {c.linkedin_url && (
+                        <button
+                          className="p-1 text-text-muted hover:text-accent-blue disabled:opacity-40"
+                          title="Enrich via LinkedIn"
+                          disabled={enrichingId === c.id}
+                          onClick={(e) => { e.stopPropagation(); void handleEnrichLinkedin(c.id) }}
+                        >
+                          <Linkedin className={`w-3.5 h-3.5 ${enrichingId === c.id ? 'animate-pulse' : ''}`} />
+                        </button>
+                      )}
                       <button
                         className="p-1 text-text-muted hover:text-text-primary"
                         title="Edit"

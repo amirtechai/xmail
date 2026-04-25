@@ -21,6 +21,7 @@ celery_app = Celery(
         "app.tasks.bulk_verify_task",
         "app.tasks.sequence_runner",
         "app.tasks.rss_scraping_task",
+        "app.tasks.webhook_processor",
     ],
 )
 

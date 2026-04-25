@@ -47,5 +47,12 @@ class SentEmail(Base):
     sequence_step_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
     # 'A' or 'B' when A/B testing is active; NULL otherwise
     ab_variant: Mapped[str | None] = mapped_column(String(1), nullable=True)
+    # Recipient address stored for bounce/suppression lookups
+    recipient_email: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    # Set to True once bounced address has been written to suppression list
+    bounce_processed: Mapped[bool] = mapped_column(default=False, nullable=False)
+    # Webhook-reported timestamps (first occurrence only)
+    opened_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    clicked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     __table_args__ = (Index("ix_sent_email_campaign_status", "campaign_id", "status"),)
