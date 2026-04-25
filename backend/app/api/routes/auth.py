@@ -10,7 +10,9 @@ from jose import JWTError
 from pydantic import BaseModel
 from sqlalchemy import select
 
-from app.api.deps import CurrentUser, SessionDep
+import uuid
+
+from app.api.deps import AdminUser, CurrentUser, SessionDep
 from app.core.auth import (
     create_access_token,
     create_refresh_token,
@@ -21,7 +23,7 @@ from app.core.auth import (
 from app.core.crypto import get_crypto
 from app.core.exceptions import UnauthorizedError
 from app.core.metrics import login_attempts_total, totp_verifications_total
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.schemas.user import LoginRequest, RefreshRequest, TokenPair, UserOut
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -248,3 +250,78 @@ async def refresh(body: RefreshRequest, session: SessionDep) -> TokenPair:
 @router.get("/me", response_model=UserOut)
 async def me(current_user: CurrentUser) -> User:
     return current_user
+
+
+# ── User management (admin only) ─────────────────────────────────────────────
+
+_VALID_ROLES = {r.value for r in UserRole}
+
+
+class UserCreateRequest(BaseModel):
+    email: str
+    password: str
+    role: str = UserRole.VIEWER.value
+
+
+class UserUpdateRequest(BaseModel):
+    role: str | None = None
+    is_active: bool | None = None
+
+
+@router.get("/users", tags=["users"])
+async def list_users(_: AdminUser, session: SessionDep) -> list[dict]:
+    rows = (await session.execute(select(User).order_by(User.created_at))).scalars().all()
+    return [
+        {
+            "id": str(u.id),
+            "email": u.email,
+            "role": u.role,
+            "is_active": u.is_active,
+            "totp_enabled": u.totp_enabled,
+            "last_login_at": u.last_login_at.isoformat() if u.last_login_at else None,
+            "created_at": u.created_at.isoformat(),
+        }
+        for u in rows
+    ]
+
+
+@router.post("/users", status_code=status.HTTP_201_CREATED, tags=["users"])
+async def create_user(body: UserCreateRequest, _: AdminUser, session: SessionDep) -> dict:
+    if body.role not in _VALID_ROLES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
+    if len(body.password) < 8:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters")
+
+    existing = (await session.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
+
+    user = User(email=body.email.lower().strip(), password_hash=hash_password(body.password), role=body.role)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+    return {"id": str(user.id), "email": user.email, "role": user.role, "is_active": user.is_active}
+
+
+@router.patch("/users/{user_id}", tags=["users"])
+async def update_user(user_id: uuid.UUID, body: UserUpdateRequest, current_admin: AdminUser, session: SessionDep) -> dict:
+    if body.role is not None and body.role not in _VALID_ROLES:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
+
+    user = (await session.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    if user.id == current_admin.id and body.role is not None and body.role != UserRole.ADMIN.value:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot demote yourself")
+
+    if body.role is not None:
+        user.role = body.role
+    if body.is_active is not None:
+        if user.id == current_admin.id and not body.is_active:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot deactivate yourself")
+        user.is_active = body.is_active
+
+    await session.commit()
+    await session.refresh(user)
+    return {"id": str(user.id), "email": user.email, "role": user.role, "is_active": user.is_active}

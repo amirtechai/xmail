@@ -6,7 +6,7 @@ from datetime import datetime
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
-from app.api.deps import AdminUser, CurrentUser, SessionDep
+from app.api.deps import AdminUser, CurrentUser, OperatorUser, SessionDep
 from app.llm.base import LLMMessage
 from app.llm.router import build_provider
 from app.models.campaign import Campaign, CampaignStatus
@@ -70,7 +70,7 @@ async def list_campaigns(session: SessionDep, _: CurrentUser) -> list:
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_campaign(body: CampaignCreate, session: SessionDep, user: CurrentUser) -> dict:
+async def create_campaign(body: CampaignCreate, session: SessionDep, user: OperatorUser) -> dict:
     meta = {
         "email_subject_b": body.email_subject_b,
         "scheduled_at": body.scheduled_at.isoformat() if body.scheduled_at else None,
@@ -112,7 +112,7 @@ async def update_campaign(
     campaign_id: uuid.UUID,
     body: CampaignCreate,
     session: SessionDep,
-    user: CurrentUser,
+    user: OperatorUser,
 ) -> dict:
     result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
     c = result.scalar_one_or_none()
@@ -153,7 +153,7 @@ async def send_campaign(
     campaign_id: uuid.UUID,
     body: SendRequest,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
     c = result.scalar_one_or_none()
@@ -254,7 +254,7 @@ async def test_send(
     campaign_id: uuid.UUID,
     body: TestSendRequest,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
     c = result.scalar_one_or_none()
@@ -292,7 +292,7 @@ async def test_send(
 
 
 @router.post("/ai-draft", response_model=AIDraftResponse)
-async def ai_draft(body: AIDraftRequest, session: SessionDep, _: AdminUser) -> AIDraftResponse:
+async def ai_draft(body: AIDraftRequest, session: SessionDep, _: OperatorUser) -> AIDraftResponse:
     # Get LLM config
     if body.llm_config_id:
         llm_result = await session.execute(
@@ -545,7 +545,7 @@ async def create_sequence(
     campaign_id: uuid.UUID,
     body: SequenceCreate,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     result = await session.execute(select(Campaign).where(Campaign.id == campaign_id))
     if not result.scalar_one_or_none():
@@ -570,7 +570,7 @@ async def update_sequence(
     seq_id: uuid.UUID,
     body: SequenceUpdate,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     seq = (await session.execute(
         select(CampaignSequence).where(
@@ -602,7 +602,7 @@ async def delete_sequence(
     campaign_id: uuid.UUID,
     seq_id: uuid.UUID,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> None:
     seq = (await session.execute(
         select(CampaignSequence).where(
@@ -631,7 +631,7 @@ async def add_step(
     seq_id: uuid.UUID,
     body: SequenceStepCreate,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     seq = (await session.execute(
         select(CampaignSequence).where(
@@ -672,7 +672,7 @@ async def update_step(
     step_id: uuid.UUID,
     body: SequenceStepUpdate,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> dict:
     step = (await session.execute(
         select(CampaignSequenceStep).where(
@@ -715,7 +715,7 @@ async def delete_step(
     seq_id: uuid.UUID,
     step_id: uuid.UUID,
     session: SessionDep,
-    _: AdminUser,
+    _: OperatorUser,
 ) -> None:
     step = (await session.execute(
         select(CampaignSequenceStep).where(

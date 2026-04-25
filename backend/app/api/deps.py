@@ -37,6 +37,9 @@ async def get_current_user(
     return user
 
 
+_OPERATOR_ROLES = {UserRole.ADMIN.value, UserRole.OPERATOR.value}
+
+
 async def require_admin(
     current_user: Annotated[User, Depends(get_current_user)],
 ) -> User:
@@ -45,5 +48,14 @@ async def require_admin(
     return current_user
 
 
+async def require_operator(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    if current_user.role not in _OPERATOR_ROLES:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Operator role required")
+    return current_user
+
+
 CurrentUser = Annotated[User, Depends(get_current_user)]
 AdminUser = Annotated[User, Depends(require_admin)]
+OperatorUser = Annotated[User, Depends(require_operator)]

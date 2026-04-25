@@ -13,7 +13,9 @@ from app.database import Base
 
 class UserRole(str, Enum):
     ADMIN = "admin"
-    USER = "user"
+    OPERATOR = "operator"
+    VIEWER = "viewer"
+    USER = "user"  # legacy alias for viewer
 
 
 class User(Base):

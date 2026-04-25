@@ -11,7 +11,7 @@ from fastapi.responses import Response
 from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import AdminUser, CurrentUser, get_session
+from app.api.deps import AdminUser, CurrentUser, OperatorUser, get_session
 from app.models.discovered_contact import DiscoveredContact
 from app.schemas.contact import BulkDeleteRequest, ContactUpdate, ImportResult, VerifyBulkRequest
 
@@ -209,7 +209,7 @@ async def export_contacts(
 async def update_contact(
     contact_id: uuid.UUID,
     body: ContactUpdate,
-    _: AdminUser,
+    _: OperatorUser,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     result = await session.execute(
@@ -232,7 +232,7 @@ async def update_contact(
 @router.post("/bulk-delete", status_code=status.HTTP_200_OK)
 async def bulk_delete_contacts(
     body: BulkDeleteRequest,
-    _: AdminUser,
+    _: OperatorUser,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     if not body.ids:
@@ -260,7 +260,7 @@ async def bulk_delete_contacts(
 
 @router.post("/import", response_model=ImportResult, status_code=status.HTTP_200_OK)
 async def import_contacts(
-    _: AdminUser,
+    _: OperatorUser,
     session: AsyncSession = Depends(get_session),
     file: UploadFile = File(...),
     audience_type: str = Query("imported", pattern=r"^[a-z0-9_\-]{1,100}$"),
@@ -419,7 +419,7 @@ async def enrich_linkedin(
 @router.post("/verify-bulk", status_code=status.HTTP_202_ACCEPTED)
 async def verify_bulk(
     body: VerifyBulkRequest,
-    _: AdminUser,
+    _: OperatorUser,
     session: AsyncSession = Depends(get_session),
 ) -> dict:
     if body.ids is not None:
