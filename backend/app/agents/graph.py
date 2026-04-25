@@ -13,6 +13,7 @@ from app.agents.nodes.hunter_lookup import hunter_lookup_node
 from app.agents.nodes.infer_email_pattern import infer_email_pattern_node
 from app.agents.nodes.persist_contact import persist_contact_node
 from app.agents.nodes.planner import planner_node
+from app.agents.nodes.proxycurl_enrich import proxycurl_enrich_node
 from app.agents.nodes.rss_feed_reader import rss_feed_reader_node
 from app.agents.nodes.score_contact import score_contact_node
 from app.agents.nodes.search_web import search_web_node
@@ -36,6 +37,7 @@ def build_graph(llm_provider, session, redis_client):  # type: ignore[no-untyped
     graph.add_node("crawl_urls", crawl_urls_node)
     graph.add_node("extract_emails", extract_emails_node)
     graph.add_node("enrich_contact", partial(enrich_contact_node, llm_provider=llm_provider))
+    graph.add_node("proxycurl_enrich", proxycurl_enrich_node)
     graph.add_node("validate_email", validate_email_node)
     graph.add_node("dedupe", partial(dedupe_against_db_node, session=session, redis_client=redis_client))
     graph.add_node("rss_feed_reader", partial(rss_feed_reader_node, session=session))
@@ -56,7 +58,8 @@ def build_graph(llm_provider, session, redis_client):  # type: ignore[no-untyped
     graph.add_edge("rss_feed_reader", "crawl_urls")
     graph.add_edge("crawl_urls", "extract_emails")
     graph.add_edge("extract_emails", "enrich_contact")
-    graph.add_edge("enrich_contact", "validate_email")
+    graph.add_edge("enrich_contact", "proxycurl_enrich")
+    graph.add_edge("proxycurl_enrich", "validate_email")
     graph.add_edge("validate_email", "dedupe")
     graph.add_edge("dedupe", "infer_email_pattern")
     graph.add_edge("infer_email_pattern", "hunter_lookup")

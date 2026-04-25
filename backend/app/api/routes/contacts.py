@@ -349,6 +349,73 @@ async def import_contacts(
     return ImportResult(imported=imported, skipped=skipped, errors=[{"row": e["row"], "email": e["email"], "error": e["error"]} for e in errors[:50]])
 
 
+@router.post("/{contact_id}/enrich-linkedin")
+async def enrich_linkedin(
+    contact_id: uuid.UUID,
+    _: AdminUser,
+    session: AsyncSession = Depends(get_session),
+) -> dict:
+    """Enrich a single contact with LinkedIn data via Proxycurl."""
+    from app.config import settings
+
+    if not settings.proxycurl_api_key:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="PROXYCURL_API_KEY is not configured.",
+        )
+
+    contact = (await session.execute(
+        select(DiscoveredContact).where(DiscoveredContact.id == contact_id)
+    )).scalar_one_or_none()
+    if not contact:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
+
+    if not contact.linkedin_url:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Contact has no LinkedIn URL to enrich.",
+        )
+
+    from app.scrapers.proxycurl_client import extract_fields, fetch_linkedin_profile
+
+    try:
+        profile = await fetch_linkedin_profile(contact.linkedin_url, settings.proxycurl_api_key)
+    except Exception as exc:
+        raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
+
+    if not profile:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="LinkedIn profile not found via Proxycurl.",
+        )
+
+    fields = extract_fields(profile)
+    for key, value in fields.items():
+        if value and not getattr(contact, key, None):
+            setattr(contact, key, value)
+
+    meta = contact.enrichment_data or {}
+    meta["proxycurl"] = {k: profile.get(k) for k in ("headline", "summary", "city", "experiences")}
+    contact.enrichment_data = meta
+
+    await session.commit()
+    await session.refresh(contact)
+
+    return {
+        "id": str(contact.id),
+        "email": contact.email,
+        "full_name": contact.full_name,
+        "first_name": contact.first_name,
+        "last_name": contact.last_name,
+        "title": contact.title,
+        "company": contact.company,
+        "country": contact.country,
+        "twitter_handle": contact.twitter_handle,
+        "linkedin_url": contact.linkedin_url,
+        "enriched": True,
+    }
+
+
 @router.post("/verify-bulk", status_code=status.HTTP_202_ACCEPTED)
 async def verify_bulk(
     body: VerifyBulkRequest,
