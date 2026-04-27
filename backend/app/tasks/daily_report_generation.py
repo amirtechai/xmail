@@ -1,12 +1,12 @@
 """Daily report generation task — 05:30 UTC."""
 
 import asyncio
-import logging
 from datetime import date, datetime, timezone
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.daily_report_generation.generate_daily_report", bind=True)

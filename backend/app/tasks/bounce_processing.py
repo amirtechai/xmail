@@ -4,11 +4,11 @@ Reads SentEmail rows with BOUNCED status and adds them to suppression list.
 """
 
 import asyncio
-import logging
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.bounce_processing.process_bounces", bind=True)

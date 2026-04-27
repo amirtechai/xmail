@@ -1,11 +1,11 @@
 """People Data Labs (PDL) API client — person enrichment."""
 
-import logging
 from dataclasses import dataclass, field
 
 import httpx
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _BASE = "https://api.peopledatalabs.com/v5"
 

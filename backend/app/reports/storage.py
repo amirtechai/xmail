@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import logging
 from datetime import date, timedelta, timezone, datetime
 from pathlib import Path
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 # Reports stored under /var/xmail/reports/<YYYY>/<MM>/<DD>/
 _BASE_DIR = Path("/var/xmail/reports")

@@ -6,11 +6,11 @@ Skipped silently when PDL_API_KEY is not configured.
 Only processes contacts with score > 50 or that have name + company.
 """
 
-import logging
 
 from app.agents.state import XmailState
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _MIN_SCORE_TO_ENRICH = 50
 _MAX_ENRICH_PER_RUN = 20  # PDL credits are expensive

@@ -1,11 +1,11 @@
 """Apollo.io REST API client — people search for targeted contact discovery."""
 
-import logging
 from dataclasses import dataclass, field
 
 import httpx
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _BASE = "https://api.apollo.io/v1"
 

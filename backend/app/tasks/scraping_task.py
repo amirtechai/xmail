@@ -1,11 +1,11 @@
 """On-demand scraping task — triggered by API or discovery cycle."""
 
 import asyncio
-import logging
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 
 @celery_app.task(

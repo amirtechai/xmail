@@ -8,14 +8,14 @@ that is loaded on next worker restart.
 
 import asyncio
 import json
-import logging
 from pathlib import Path
 
 import httpx
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 DEA_CACHE_PATH = Path("/tmp/xmail_dea_domains.json")  # noqa: S108
 # Public list maintained by disposable-email-domains community

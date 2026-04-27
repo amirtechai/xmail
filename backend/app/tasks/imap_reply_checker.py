@@ -10,13 +10,13 @@ IMAP host is derived from the SMTP host (smtp.X → imap.X).
 
 import email
 import imaplib
-import logging
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _SEARCH_WINDOW_DAYS = 7
 _BATCH_LIMIT = 500

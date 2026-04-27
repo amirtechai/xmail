@@ -5,11 +5,11 @@ Also registered as a Celery task for on-demand re-seeding.
 """
 
 import asyncio
-import logging
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 # Finance-specific scraping sources
 FINANCE_SOURCES = [

@@ -1,11 +1,11 @@
 """Hunter.io REST API client — domain_search and email_finder."""
 
-import logging
 from dataclasses import dataclass
 
 import httpx
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _BASE = "https://api.hunter.io/v2"
 

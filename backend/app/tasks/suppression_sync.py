@@ -4,11 +4,11 @@ Ensures bloom filter stays in sync with DB suppression list.
 """
 
 import asyncio
-import logging
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.suppression_sync.sync_suppression_list", bind=True)

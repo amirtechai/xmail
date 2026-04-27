@@ -4,12 +4,12 @@ Runs after infer_email_pattern, before score_contact.
 Skipped silently when HUNTER_API_KEY is not configured.
 """
 
-import logging
 from urllib.parse import urlparse
 
 from app.agents.state import XmailState
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _MAX_DOMAINS = 5      # API quota guard per pipeline run
 _MAX_PER_DOMAIN = 100  # Hunter hard max per domain-search call

@@ -9,7 +9,6 @@ Each endpoint:
 
 from __future__ import annotations
 
-import logging
 from datetime import datetime, timezone
 from typing import Any
 
@@ -18,7 +17,8 @@ from fastapi import APIRouter, Header, HTTPException, Request, status
 from app.config import settings
 from app.core.webhook_signatures import verify_mailgun, verify_postmark, verify_sendgrid
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 

@@ -6,12 +6,12 @@ to raw_urls for the crawl_urls step.
 """
 
 import asyncio
-import logging
 from datetime import datetime
 
 from app.agents.state import XmailState
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _MAX_ENTRIES_PER_FEED = 50
 

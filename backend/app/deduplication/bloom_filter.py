@@ -4,12 +4,13 @@ Capacity: 10M items, false-positive rate: 0.001 (0.1%).
 Uses Redis BF (RedisBloom) commands via redis-py.
 """
 
-import logging
 from typing import Sequence
 
 from redis.asyncio import Redis
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 BF_KEY = "xmail:dedup:bloom"
 BF_CAPACITY = 10_000_000

@@ -5,12 +5,12 @@ Celery beat task: runs daily, generates verified finance contacts from known fir
 
 import asyncio
 import hashlib
-import logging
 import uuid
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 # Known finance firm domains — authoritative list, extend as needed
 FINANCE_DOMAINS = [

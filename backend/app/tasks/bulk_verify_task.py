@@ -5,12 +5,12 @@ Processes contacts in batches; updates verified_status, confidence_score, mx_val
 """
 
 import asyncio
-import logging
 from datetime import datetime
 
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.bulk_verify_task.bulk_verify_contacts", bind=True)

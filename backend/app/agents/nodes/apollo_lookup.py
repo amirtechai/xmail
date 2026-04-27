@@ -5,11 +5,11 @@ Skipped silently when APOLLO_API_KEY is not configured.
 Adds verified finance professionals to deduplicated_contacts.
 """
 
-import logging
 
 from app.agents.state import XmailState
 
-logger = logging.getLogger(__name__)
+from app.core.logger import get_logger
+logger = get_logger(__name__)
 
 _MAX_PAGES = 3
 _PER_PAGE = 25
