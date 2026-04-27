@@ -45,7 +45,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         await redis.aclose()
         logger.info("bloom_filter_warmed_up", total=len(all_hashes))
     except Exception as exc:
-        logger.warning("bloom_filter_warmup_skipped", error=str(exc))
+        logger.warning("bloom_filter_warmup_skipped", reason=str(exc))
 
     yield
     logger.info("xmail_shutdown")
