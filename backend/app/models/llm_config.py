@@ -23,9 +23,7 @@ class LLMProvider(str, Enum):
 class LLMConfiguration(Base):
     __tablename__ = "llm_configurations"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     provider: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     api_key_encrypted: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)

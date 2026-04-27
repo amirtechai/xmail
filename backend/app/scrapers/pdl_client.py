@@ -102,9 +102,7 @@ class PDLClient:
             title=data.get("job_title") or exp.get("title", {}).get("name"),
             company=data.get("job_company_name") or exp.get("company", {}).get("name"),
             linkedin_url=linkedin,
-            twitter_url=next(
-                (p for p in data.get("profiles", []) if "twitter" in p.lower()), None
-            ),
+            twitter_url=next((p for p in data.get("profiles", []) if "twitter" in p.lower()), None),
             country=data.get("location_country"),
             city=data.get("location_locality"),
             industry=data.get("industry"),

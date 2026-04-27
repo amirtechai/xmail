@@ -65,7 +65,17 @@ async def _process(payload: dict) -> dict:
             sent_email = result.scalar_one_or_none()
 
         if event_type == "bounce":
-            await _handle_bounce(session, sent_email, email, event_time, pg_insert, SuppressionList, SuppressionReason, SentEmailStatus, hash_email)  # noqa: E501
+            await _handle_bounce(
+                session,
+                sent_email,
+                email,
+                event_time,
+                pg_insert,
+                SuppressionList,
+                SuppressionReason,
+                SentEmailStatus,
+                hash_email,
+            )  # noqa: E501
 
         elif event_type == "open":
             await _handle_open(session, sent_email, email, event_time, SentEmailStatus)
@@ -75,8 +85,14 @@ async def _process(payload: dict) -> dict:
             await _handle_click(session, sent_email, email, event_time, url, SentEmailStatus)
 
         elif event_type in ("unsubscribe", "complaint"):
-            reason = SuppressionReason.COMPLAINED if event_type == "complaint" else SuppressionReason.UNSUBSCRIBED
-            await _suppress(session, email, reason, sent_email, pg_insert, SuppressionList, hash_email)
+            reason = (
+                SuppressionReason.COMPLAINED
+                if event_type == "complaint"
+                else SuppressionReason.UNSUBSCRIBED
+            )
+            await _suppress(
+                session, email, reason, sent_email, pg_insert, SuppressionList, hash_email
+            )
             if sent_email:
                 await session.execute(
                     update(SentEmail)
@@ -90,7 +106,17 @@ async def _process(payload: dict) -> dict:
     return {"event_type": event_type, "email": email}
 
 
-async def _handle_bounce(session, sent_email, email, event_time, pg_insert, suppression_list_cls, suppression_reason_cls, sent_email_status_cls, hash_email):
+async def _handle_bounce(
+    session,
+    sent_email,
+    email,
+    event_time,
+    pg_insert,
+    suppression_list_cls,
+    suppression_reason_cls,
+    sent_email_status_cls,
+    hash_email,
+):
     from sqlalchemy import update
 
     from app.models.sent_email import SentEmail
@@ -101,7 +127,15 @@ async def _handle_bounce(session, sent_email, email, event_time, pg_insert, supp
             .where(SentEmail.id == sent_email.id)
             .values(status=sent_email_status_cls.BOUNCED.value, bounce_processed=True)
         )
-    await _suppress(session, email, suppression_reason_cls.BOUNCED, sent_email, pg_insert, suppression_list_cls, hash_email)
+    await _suppress(
+        session,
+        email,
+        suppression_reason_cls.BOUNCED,
+        sent_email,
+        pg_insert,
+        suppression_list_cls,
+        hash_email,
+    )
 
 
 async def _handle_open(session, sent_email, email, event_time, sent_email_status_cls):
@@ -125,7 +159,10 @@ async def _handle_click(session, sent_email, email, event_time, url, sent_email_
     if sent_email:
         existing_clicks = list(sent_email.click_events or [])
         existing_clicks.append({"url": url, "timestamp": event_time.isoformat()})
-        values: dict = {"status": sent_email_status_cls.CLICKED.value, "click_events": existing_clicks}
+        values: dict = {
+            "status": sent_email_status_cls.CLICKED.value,
+            "click_events": existing_clicks,
+        }
         if not sent_email.clicked_at:
             values["clicked_at"] = event_time
         await session.execute(
@@ -133,10 +170,13 @@ async def _handle_click(session, sent_email, email, event_time, url, sent_email_
         )
 
 
-async def _suppress(session, email, reason, sent_email, pg_insert, suppression_list_cls, hash_email):
+async def _suppress(
+    session, email, reason, sent_email, pg_insert, suppression_list_cls, hash_email
+):
     if not email:
         return
     from app.deduplication.hasher import hash_email as _hash
+
     stmt = (
         pg_insert(suppression_list_cls)
         .values(

@@ -15,12 +15,16 @@ router = APIRouter(prefix="/audience-types", tags=["audience-types"])
 async def list_audience_types(session: SessionDep, _: CurrentUser) -> dict:
     # All types
     rows = (
-        await session.execute(
-            select(TargetAudienceType).order_by(
-                TargetAudienceType.category, TargetAudienceType.label_en
+        (
+            await session.execute(
+                select(TargetAudienceType).order_by(
+                    TargetAudienceType.category, TargetAudienceType.label_en
+                )
             )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     # Contact counts per audience key
     count_rows = (
@@ -39,21 +43,20 @@ async def list_audience_types(session: SessionDep, _: CurrentUser) -> dict:
         cat = t.category
         if cat not in grouped:
             grouped[cat] = []
-        grouped[cat].append({
-            "key": t.key,
-            "label_en": t.label_en,
-            "label_tr": t.label_tr,
-            "description": t.description,
-            "icon_name": t.icon_name,
-            "is_enabled_default": t.is_enabled_default,
-            "contact_count": counts.get(t.key, 0),
-        })
+        grouped[cat].append(
+            {
+                "key": t.key,
+                "label_en": t.label_en,
+                "label_tr": t.label_tr,
+                "description": t.description,
+                "icon_name": t.icon_name,
+                "is_enabled_default": t.is_enabled_default,
+                "contact_count": counts.get(t.key, 0),
+            }
+        )
 
     return {
-        "categories": [
-            {"name": cat, "types": types}
-            for cat, types in grouped.items()
-        ],
+        "categories": [{"name": cat, "types": types} for cat, types in grouped.items()],
         "total": len(rows),
     }
 
@@ -69,9 +72,7 @@ async def toggle_audience_type(
     session: SessionDep,
     _: AdminUser,
 ) -> dict:
-    result = await session.execute(
-        select(TargetAudienceType).where(TargetAudienceType.key == key)
-    )
+    result = await session.execute(select(TargetAudienceType).where(TargetAudienceType.key == key))
     t = result.scalar_one_or_none()
     if not t:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Audience type not found")

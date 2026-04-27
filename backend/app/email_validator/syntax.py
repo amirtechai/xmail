@@ -3,9 +3,7 @@
 import re
 
 # Stricter than the agent extraction regex — used for definitive validation
-_VALID_EMAIL = re.compile(
-    r"^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,253}\.[A-Za-z]{2,10}$"
-)
+_VALID_EMAIL = re.compile(r"^[A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,253}\.[A-Za-z]{2,10}$")
 
 
 def is_valid_syntax(email: str) -> bool:

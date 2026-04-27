@@ -35,35 +35,55 @@ async def _run() -> dict:
     skipped_count = 0
 
     async with async_session_factory() as session:
-        sequences = (await session.execute(
-            select(CampaignSequence).where(CampaignSequence.is_active.is_(True))
-        )).scalars().all()
+        sequences = (
+            (
+                await session.execute(
+                    select(CampaignSequence).where(CampaignSequence.is_active.is_(True))
+                )
+            )
+            .scalars()
+            .all()
+        )
 
         for seq in sequences:
-            steps = (await session.execute(
-                select(CampaignSequenceStep)
-                .where(CampaignSequenceStep.sequence_id == seq.id)
-                .order_by(CampaignSequenceStep.step_number)
-            )).scalars().all()
+            steps = (
+                (
+                    await session.execute(
+                        select(CampaignSequenceStep)
+                        .where(CampaignSequenceStep.sequence_id == seq.id)
+                        .order_by(CampaignSequenceStep.step_number)
+                    )
+                )
+                .scalars()
+                .all()
+            )
 
             if not steps:
                 continue
 
             # Find all initial sends for this campaign
-            initial_sends = (await session.execute(
-                select(SentEmail).where(
-                    and_(
-                        SentEmail.campaign_id == seq.campaign_id,
-                        SentEmail.sequence_step_id.is_(None),
-                        SentEmail.status.in_([
-                            SentEmailStatus.SENT.value,
-                            SentEmailStatus.DELIVERED.value,
-                            SentEmailStatus.OPENED.value,
-                            SentEmailStatus.CLICKED.value,
-                        ]),
+            initial_sends = (
+                (
+                    await session.execute(
+                        select(SentEmail).where(
+                            and_(
+                                SentEmail.campaign_id == seq.campaign_id,
+                                SentEmail.sequence_step_id.is_(None),
+                                SentEmail.status.in_(
+                                    [
+                                        SentEmailStatus.SENT.value,
+                                        SentEmailStatus.DELIVERED.value,
+                                        SentEmailStatus.OPENED.value,
+                                        SentEmailStatus.CLICKED.value,
+                                    ]
+                                ),
+                            )
+                        )
                     )
                 )
-            )).scalars().all()
+                .scalars()
+                .all()
+            )
 
             for initial in initial_sends:
                 if initial.contact_id is None:
@@ -71,15 +91,19 @@ async def _run() -> dict:
 
                 # If stop_on_reply: skip contacts that have replied to any email in this campaign
                 if seq.stop_on_reply:
-                    replied = (await session.execute(
-                        select(SentEmail.id).where(
-                            and_(
-                                SentEmail.campaign_id == seq.campaign_id,
-                                SentEmail.contact_id == initial.contact_id,
-                                SentEmail.status == SentEmailStatus.REPLIED.value,
+                    replied = (
+                        await session.execute(
+                            select(SentEmail.id)
+                            .where(
+                                and_(
+                                    SentEmail.campaign_id == seq.campaign_id,
+                                    SentEmail.contact_id == initial.contact_id,
+                                    SentEmail.status == SentEmailStatus.REPLIED.value,
+                                )
                             )
-                        ).limit(1)
-                    )).scalar_one_or_none()
+                            .limit(1)
+                        )
+                    ).scalar_one_or_none()
                     if replied:
                         skipped_count += 1
                         continue
@@ -88,15 +112,19 @@ async def _run() -> dict:
                 last_sent_at = initial.sent_at or datetime.utcnow()
                 last_step_number = 0
 
-                prior_steps = (await session.execute(
-                    select(SentEmail.sequence_step_id, SentEmail.sent_at).where(
-                        and_(
-                            SentEmail.campaign_id == seq.campaign_id,
-                            SentEmail.contact_id == initial.contact_id,
-                            SentEmail.sequence_step_id.is_not(None),
+                prior_steps = (
+                    await session.execute(
+                        select(SentEmail.sequence_step_id, SentEmail.sent_at)
+                        .where(
+                            and_(
+                                SentEmail.campaign_id == seq.campaign_id,
+                                SentEmail.contact_id == initial.contact_id,
+                                SentEmail.sequence_step_id.is_not(None),
+                            )
                         )
-                    ).order_by(SentEmail.sent_at.desc())
-                )).all()
+                        .order_by(SentEmail.sent_at.desc())
+                    )
+                ).all()
 
                 sent_step_ids = {row[0] for row in prior_steps}
                 if prior_steps:
@@ -156,6 +184,7 @@ async def _send_step(session, seq, step, initial_send) -> bool:  # type: ignore[
     # Dispatch the actual send via the existing send worker
     try:
         from app.tasks.bounce_processing import send_campaign_email  # type: ignore[attr-defined]
+
         send_campaign_email.delay(str(follow_up.id))
     except Exception:
         # If send worker isn't wired yet, leave as QUEUED for the next pass

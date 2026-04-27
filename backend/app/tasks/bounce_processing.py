@@ -39,15 +39,20 @@ async def _process() -> dict:
 
         # Upsert into suppression list
         for email in bounce_emails:
-            stmt = pg_insert(SuppressionList).values(
-                email=email.lower().strip(),
-                reason=SuppressionReason.BOUNCED,
-                source="bounce_processor",
-            ).on_conflict_do_nothing(index_elements=["email"])
+            stmt = (
+                pg_insert(SuppressionList)
+                .values(
+                    email=email.lower().strip(),
+                    reason=SuppressionReason.BOUNCED,
+                    source="bounce_processor",
+                )
+                .on_conflict_do_nothing(index_elements=["email"])
+            )
             await session.execute(stmt)
 
         # Mark as processed
         from sqlalchemy import update
+
         await session.execute(
             update(SentEmail)
             .where(

@@ -42,7 +42,9 @@ def build_graph(llm_provider, session, redis_client):  # type: ignore[no-untyped
     graph.add_node("proxycurl_enrich", proxycurl_enrich_node)
     graph.add_node("pdl_enrich", pdl_enrich_node)
     graph.add_node("validate_email", validate_email_node)
-    graph.add_node("dedupe", partial(dedupe_against_db_node, session=session, redis_client=redis_client))
+    graph.add_node(
+        "dedupe", partial(dedupe_against_db_node, session=session, redis_client=redis_client)
+    )
     graph.add_node("rss_feed_reader", partial(rss_feed_reader_node, session=session))
     graph.add_node("apollo_lookup", apollo_lookup_node)
     graph.add_node("infer_email_pattern", infer_email_pattern_node)

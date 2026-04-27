@@ -20,12 +20,15 @@ def _scalar_result(value: object) -> MagicMock:
 
 # ── minimal app ────────────────────────────────────────────────────────────────
 
+
 def _build_app() -> FastAPI:
     app = FastAPI()
     from app.core.exceptions import register_exception_handlers
+
     register_exception_handlers(app)
     from app.api.routes.tracking import router as tracking_router
     from app.api.routes.unsubscribe import router as unsubscribe_router
+
     app.include_router(tracking_router)
     app.include_router(unsubscribe_router)
     return app
@@ -51,20 +54,25 @@ async def client(pub_app: FastAPI, mock_session: AsyncMock) -> AsyncGenerator[As
 
 # ── tracking pixel ─────────────────────────────────────────────────────────────
 
+
 class TestTrackingPixel:
     async def test_bad_uuid_returns_gif(self, client: AsyncClient) -> None:
         r = await client.get("/t/o/not-a-uuid.gif")
         assert r.status_code == 200
         assert r.headers["content-type"] == "image/gif"
 
-    async def test_unknown_uuid_returns_gif(self, client: AsyncClient, mock_session: AsyncMock) -> None:
+    async def test_unknown_uuid_returns_gif(
+        self, client: AsyncClient, mock_session: AsyncMock
+    ) -> None:
         mock_session.execute.return_value = _scalar_result(None)
 
         r = await client.get(f"/t/o/{uuid.uuid4()}.gif")
         assert r.status_code == 200
         assert r.headers["content-type"] == "image/gif"
 
-    async def test_first_open_marks_opened(self, client: AsyncClient, mock_session: AsyncMock) -> None:
+    async def test_first_open_marks_opened(
+        self, client: AsyncClient, mock_session: AsyncMock
+    ) -> None:
         from app.models.sent_email import SentEmailStatus
 
         sent = MagicMock()
@@ -78,7 +86,9 @@ class TestTrackingPixel:
         assert sent.status == SentEmailStatus.OPENED.value
         mock_session.commit.assert_called_once()
 
-    async def test_second_open_idempotent(self, client: AsyncClient, mock_session: AsyncMock) -> None:
+    async def test_second_open_idempotent(
+        self, client: AsyncClient, mock_session: AsyncMock
+    ) -> None:
         from datetime import datetime
 
         from app.models.sent_email import SentEmailStatus
@@ -100,6 +110,7 @@ class TestTrackingPixel:
 
 
 # ── unsubscribe ────────────────────────────────────────────────────────────────
+
 
 class TestUnsubscribePage:
     async def test_get_bad_token_returns_400_html(self, client: AsyncClient) -> None:

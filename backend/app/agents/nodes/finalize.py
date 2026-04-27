@@ -31,9 +31,7 @@ async def finalize_node(state: XmailState, session) -> dict:  # type: ignore[no-
         from app.models.daily_report import DailyReport
 
         today = date.today()
-        result = await session.execute(
-            select(DailyReport).where(DailyReport.report_date == today)
-        )
+        result = await session.execute(select(DailyReport).where(DailyReport.report_date == today))
         report = result.scalar_one_or_none()
         if not report:
             report = DailyReport(report_date=today)

@@ -12,8 +12,7 @@ logger = get_logger(__name__)
 @celery_app.task(name="app.tasks.daily_report_generation.generate_daily_report", bind=True)
 def generate_daily_report(self, report_date_iso: str | None = None) -> dict:  # type: ignore[override]
     target_date = (
-        date.fromisoformat(report_date_iso) if report_date_iso
-        else datetime.now(UTC).date()
+        date.fromisoformat(report_date_iso) if report_date_iso else datetime.now(UTC).date()
     )
     return asyncio.get_event_loop().run_until_complete(_generate(target_date))
 
@@ -55,18 +54,22 @@ async def _generate(report_date: date) -> dict:
         bounced_count = bounced.scalar_one()
 
         # Upsert daily report
-        stmt = pg_insert(DailyReport).values(
-            report_date=report_date,
-            contacts_discovered=discovered_count,
-            emails_sent=sent_count,
-            emails_bounced=bounced_count,
-        ).on_conflict_do_update(
-            index_elements=["report_date"],
-            set_={
-                "contacts_discovered": discovered_count,
-                "emails_sent": sent_count,
-                "emails_bounced": bounced_count,
-            },
+        stmt = (
+            pg_insert(DailyReport)
+            .values(
+                report_date=report_date,
+                contacts_discovered=discovered_count,
+                emails_sent=sent_count,
+                emails_bounced=bounced_count,
+            )
+            .on_conflict_do_update(
+                index_elements=["report_date"],
+                set_={
+                    "contacts_discovered": discovered_count,
+                    "emails_sent": sent_count,
+                    "emails_bounced": bounced_count,
+                },
+            )
         )
         await session.execute(stmt)
         await session.commit()

@@ -11,7 +11,7 @@ from app.core.logger import get_logger
 
 logger = get_logger(__name__)
 
-_MAX_DOMAINS = 5      # API quota guard per pipeline run
+_MAX_DOMAINS = 5  # API quota guard per pipeline run
 _MAX_PER_DOMAIN = 100  # Hunter hard max per domain-search call
 
 
@@ -72,19 +72,21 @@ async def hunter_lookup_node(state: XmailState) -> dict:
                 if h.email.lower() in existing_emails:
                     continue
                 name_parts = [h.first_name or "", h.last_name or ""]
-                new_contacts.append({
-                    "email": h.email.lower(),
-                    "name": " ".join(p for p in name_parts if p) or None,
-                    "first_name": h.first_name,
-                    "last_name": h.last_name,
-                    "title": h.position,
-                    "company": domain,
-                    "website": f"https://{domain}",
-                    "linkedin_url": h.linkedin_url,
-                    "verified_status": _confidence_to_status(h.confidence),
-                    "confidence_score": h.confidence,
-                    "source": "hunter",
-                })
+                new_contacts.append(
+                    {
+                        "email": h.email.lower(),
+                        "name": " ".join(p for p in name_parts if p) or None,
+                        "first_name": h.first_name,
+                        "last_name": h.last_name,
+                        "title": h.position,
+                        "company": domain,
+                        "website": f"https://{domain}",
+                        "linkedin_url": h.linkedin_url,
+                        "verified_status": _confidence_to_status(h.confidence),
+                        "confidence_score": h.confidence,
+                        "source": "hunter",
+                    }
+                )
                 existing_emails.add(h.email.lower())
         except Exception as exc:
             logger.warning("hunter_domain_error", domain=domain, reason=str(exc))

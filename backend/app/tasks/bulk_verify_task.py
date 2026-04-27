@@ -108,6 +108,13 @@ async def _verify_inhouse(emails: list[str]) -> list[dict]:
                     "is_role": r.is_role,
                 }
             except Exception:
-                return {"email": email, "status": "risky", "score": 30, "mx_valid": False, "is_disposable": False, "is_role": False}
+                return {
+                    "email": email,
+                    "status": "risky",
+                    "score": 30,
+                    "mx_valid": False,
+                    "is_disposable": False,
+                    "is_role": False,
+                }
 
     return list(await asyncio.gather(*[_one(e) for e in emails]))

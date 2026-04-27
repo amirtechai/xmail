@@ -12,6 +12,7 @@ from app.sender.compliance import (
 
 # ── build_unsubscribe_url ─────────────────────────────────────────────────────
 
+
 class TestBuildUnsubscribeUrl:
     def test_url_contains_token(self) -> None:
         with patch("app.sender.compliance.settings") as s:
@@ -28,6 +29,7 @@ class TestBuildUnsubscribeUrl:
 
 
 # ── inject_compliance_footer ──────────────────────────────────────────────────
+
 
 class TestInjectComplianceFooter:
     def _settings(self):
@@ -124,6 +126,7 @@ class TestInjectComplianceFooter:
 
 
 # ── check_suppression_required ────────────────────────────────────────────────
+
 
 class TestCheckSuppressionRequired:
     def test_complaint_triggers_suppression(self) -> None:

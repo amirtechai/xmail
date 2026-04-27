@@ -33,6 +33,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 async def _get_redis():  # type: ignore[return]
     from app.database import get_redis
+
     return await get_redis()
 
 
@@ -41,6 +42,7 @@ async def _get_redis():  # type: ignore[return]
 
 class LoginResponse(BaseModel):
     """Either full tokens (no 2FA) or a short-lived TOTP challenge token."""
+
     access_token: str | None = None
     refresh_token: str | None = None
     token_type: str = "bearer"
@@ -86,12 +88,15 @@ async def login(body: LoginRequest, request: Request, session: SessionDep) -> Lo
 
     # Update last login
     from datetime import datetime
+
     user.last_login_at = datetime.utcnow()
     await session.commit()
 
     # If TOTP enabled, issue a short-lived challenge token instead of full tokens
     if user.totp_enabled:
-        challenge = create_access_token(str(user.id), expires_delta=__import__("datetime").timedelta(minutes=2))
+        challenge = create_access_token(
+            str(user.id), expires_delta=__import__("datetime").timedelta(minutes=2)
+        )
         return LoginResponse(requires_totp=True, totp_token=challenge)
 
     return LoginResponse(
@@ -172,7 +177,9 @@ class TOTPConfirmRequest(BaseModel):
 
 
 @router.post("/totp/confirm", status_code=status.HTTP_204_NO_CONTENT)
-async def confirm_totp(body: TOTPConfirmRequest, current_user: CurrentUser, session: SessionDep) -> None:
+async def confirm_totp(
+    body: TOTPConfirmRequest, current_user: CurrentUser, session: SessionDep
+) -> None:
     """Verify the code matches the secret, then persist encrypted secret and enable TOTP."""
     totp = pyotp.TOTP(body.secret)
     if not totp.verify(body.code, valid_window=1):
@@ -186,7 +193,9 @@ async def confirm_totp(body: TOTPConfirmRequest, current_user: CurrentUser, sess
 
 
 @router.post("/totp/disable", status_code=status.HTTP_204_NO_CONTENT)
-async def disable_totp(body: TOTPConfirmRequest, current_user: CurrentUser, session: SessionDep) -> None:
+async def disable_totp(
+    body: TOTPConfirmRequest, current_user: CurrentUser, session: SessionDep
+) -> None:
     """Require a valid TOTP code to disable 2FA."""
     if not current_user.totp_enabled or not current_user.totp_secret_encrypted:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="TOTP not enabled")
@@ -211,11 +220,17 @@ class PasswordChangeRequest(BaseModel):
 
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)
-async def change_password(body: PasswordChangeRequest, current_user: CurrentUser, session: SessionDep) -> None:
+async def change_password(
+    body: PasswordChangeRequest, current_user: CurrentUser, session: SessionDep
+) -> None:
     if len(body.new_password) < 8:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters"
+        )
     if not verify_password(body.current_password, current_user.password_hash):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password incorrect")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Current password incorrect"
+        )
     result = await session.execute(select(User).where(User.id == current_user.id))
     user = result.scalar_one()
     user.password_hash = hash_password(body.new_password)
@@ -287,15 +302,24 @@ async def list_users(_: AdminUser, session: SessionDep) -> list[dict]:
 @router.post("/users", status_code=status.HTTP_201_CREATED, tags=["users"])
 async def create_user(body: UserCreateRequest, _: AdminUser, session: SessionDep) -> dict:
     if body.role not in _VALID_ROLES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}",
+        )
     if len(body.password) < 8:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Password must be at least 8 characters"
+        )
 
-    existing = (await session.execute(select(User).where(User.email == body.email))).scalar_one_or_none()
+    existing = (
+        await session.execute(select(User).where(User.email == body.email))
+    ).scalar_one_or_none()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
-    user = User(email=body.email.lower().strip(), password_hash=hash_password(body.password), role=body.role)
+    user = User(
+        email=body.email.lower().strip(), password_hash=hash_password(body.password), role=body.role
+    )
     session.add(user)
     await session.commit()
     await session.refresh(user)
@@ -303,22 +327,31 @@ async def create_user(body: UserCreateRequest, _: AdminUser, session: SessionDep
 
 
 @router.patch("/users/{user_id}", tags=["users"])
-async def update_user(user_id: uuid.UUID, body: UserUpdateRequest, current_admin: AdminUser, session: SessionDep) -> dict:
+async def update_user(
+    user_id: uuid.UUID, body: UserUpdateRequest, current_admin: AdminUser, session: SessionDep
+) -> dict:
     if body.role is not None and body.role not in _VALID_ROLES:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role. Must be one of: {sorted(_VALID_ROLES)}",
+        )
 
     user = (await session.execute(select(User).where(User.id == user_id))).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     if user.id == current_admin.id and body.role is not None and body.role != UserRole.ADMIN.value:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot demote yourself")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot demote yourself"
+        )
 
     if body.role is not None:
         user.role = body.role
     if body.is_active is not None:
         if user.id == current_admin.id and not body.is_active:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot deactivate yourself")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot deactivate yourself"
+            )
         user.is_active = body.is_active
 
     await session.commit()

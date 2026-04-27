@@ -23,10 +23,12 @@ def _build_test_app() -> FastAPI:
     )
 
     from app.core.exceptions import register_exception_handlers
+
     register_exception_handlers(app)
 
     from app.api.routes.auth import router as auth_router
     from app.api.routes.health import router as health_router
+
     app.include_router(auth_router, prefix="/api")
     app.include_router(health_router, prefix="/api")
 
@@ -47,15 +49,15 @@ def test_app() -> FastAPI:
 
 
 @pytest.fixture
-async def async_client(mock_session: AsyncMock, test_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
+async def async_client(
+    mock_session: AsyncMock, test_app: FastAPI
+) -> AsyncGenerator[AsyncClient, None]:
     from app.database import get_session
 
     async def _override_session() -> AsyncGenerator[AsyncSession, None]:
         yield mock_session
 
     test_app.dependency_overrides[get_session] = _override_session
-    async with AsyncClient(
-        transport=ASGITransport(app=test_app), base_url="http://test"
-    ) as client:
+    async with AsyncClient(transport=ASGITransport(app=test_app), base_url="http://test") as client:
         yield client
     test_app.dependency_overrides.clear()

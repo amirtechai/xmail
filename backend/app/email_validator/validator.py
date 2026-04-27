@@ -12,8 +12,8 @@ from app.email_validator.syntax import is_valid_syntax
 @dataclass
 class ValidationResult:
     email: str
-    status: str          # valid | invalid | risky | catch_all | disposable | role_based
-    score: int           # 0–100
+    status: str  # valid | invalid | risky | catch_all | disposable | role_based
+    score: int  # 0–100
     mx_valid: bool
     is_catch_all: bool
     is_disposable: bool
@@ -25,25 +25,43 @@ async def validate_email(email: str, redis_client=None) -> ValidationResult:  # 
 
     # Stage 1: Syntax
     if not is_valid_syntax(email):
-        return ValidationResult(email=email, status="invalid", score=0,
-                                mx_valid=False, is_catch_all=False,
-                                is_disposable=False, is_role=False)
+        return ValidationResult(
+            email=email,
+            status="invalid",
+            score=0,
+            mx_valid=False,
+            is_catch_all=False,
+            is_disposable=False,
+            is_role=False,
+        )
 
     domain = email.split("@")[1]
     is_disp = is_disposable(email)
     is_role = is_role_address(email)
 
     if is_disp:
-        return ValidationResult(email=email, status="disposable", score=5,
-                                mx_valid=False, is_catch_all=False,
-                                is_disposable=True, is_role=is_role)
+        return ValidationResult(
+            email=email,
+            status="disposable",
+            score=5,
+            mx_valid=False,
+            is_catch_all=False,
+            is_disposable=True,
+            is_role=is_role,
+        )
 
     # Stage 2: MX
     mx_ok = await has_mx_record(domain, redis_client)
     if not mx_ok:
-        return ValidationResult(email=email, status="invalid", score=10,
-                                mx_valid=False, is_catch_all=False,
-                                is_disposable=False, is_role=is_role)
+        return ValidationResult(
+            email=email,
+            status="invalid",
+            score=10,
+            mx_valid=False,
+            is_catch_all=False,
+            is_disposable=False,
+            is_role=is_role,
+        )
 
     # Stage 3: SMTP probe
     try:

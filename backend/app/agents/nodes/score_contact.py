@@ -34,10 +34,7 @@ def _compute_score(contact: dict) -> int:
 
 async def score_contact_node(state: XmailState) -> dict:
     contacts = state.get("deduplicated_contacts", [])
-    scored = [
-        {**c, "confidence_score": _compute_score(c)}
-        for c in contacts
-    ]
+    scored = [{**c, "confidence_score": _compute_score(c)} for c in contacts]
     # Sort descending — highest confidence first
     scored.sort(key=lambda c: c["confidence_score"], reverse=True)
     logger.info("score_done", contacts=len(scored))

@@ -37,6 +37,7 @@ async def check_smtp(email: str) -> tuple[bool, bool]:
                 asyncio.open_connection(mx, 25),
                 timeout=_SMTP_TIMEOUT,
             )
+
             async def recv() -> str:
                 return (await reader.read(512)).decode(errors="ignore")
 

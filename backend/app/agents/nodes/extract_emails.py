@@ -11,20 +11,45 @@ logger = get_logger(__name__)
 
 # RFC 5322-simplified pattern — avoids catastrophic backtracking
 _EMAIL_RE = re.compile(
-    r"(?<![='\"/])"           # not preceded by URL/attr chars
+    r"(?<![='\"/])"  # not preceded by URL/attr chars
     r"\b([A-Za-z0-9._%+\-]{1,64}@[A-Za-z0-9.\-]{1,253}\.[A-Za-z]{2,10})\b"
 )
 
-_ROLE_PREFIXES = frozenset({
-    "info", "admin", "support", "help", "contact", "sales", "hello",
-    "team", "office", "webmaster", "postmaster", "noreply", "no-reply",
-    "bounce", "abuse", "spam", "marketing", "newsletter",
-})
+_ROLE_PREFIXES = frozenset(
+    {
+        "info",
+        "admin",
+        "support",
+        "help",
+        "contact",
+        "sales",
+        "hello",
+        "team",
+        "office",
+        "webmaster",
+        "postmaster",
+        "noreply",
+        "no-reply",
+        "bounce",
+        "abuse",
+        "spam",
+        "marketing",
+        "newsletter",
+    }
+)
 
-_BLOCKED_DOMAINS = frozenset({
-    "example.com", "test.com", "placeholder.com", "yourdomain.com",
-    "domain.com", "email.com", "sentry.io", "github.com",
-})
+_BLOCKED_DOMAINS = frozenset(
+    {
+        "example.com",
+        "test.com",
+        "placeholder.com",
+        "yourdomain.com",
+        "domain.com",
+        "email.com",
+        "sentry.io",
+        "github.com",
+    }
+)
 
 
 def _is_likely_personal(email: str) -> bool:

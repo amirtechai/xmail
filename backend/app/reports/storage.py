@@ -34,12 +34,14 @@ def list_reports(limit: int = 90) -> list[dict]:
 
     for pdf in sorted(_BASE_DIR.rglob("*.pdf"), reverse=True)[:limit]:
         xml = pdf.with_suffix(".xml")
-        reports.append({
-            "date": pdf.stem.replace("xmail_report_", ""),
-            "pdf_path": str(pdf),
-            "xml_path": str(xml) if xml.exists() else None,
-            "pdf_size": pdf.stat().st_size if pdf.exists() else 0,
-        })
+        reports.append(
+            {
+                "date": pdf.stem.replace("xmail_report_", ""),
+                "pdf_path": str(pdf),
+                "xml_path": str(xml) if xml.exists() else None,
+                "pdf_size": pdf.stat().st_size if pdf.exists() else 0,
+            }
+        )
     return reports
 
 

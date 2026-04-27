@@ -1,6 +1,5 @@
 """Contact output + update schemas."""
 
-
 from pydantic import BaseModel
 
 

@@ -13,9 +13,7 @@ from app.database import Base
 class AuditLog(Base):
     __tablename__ = "audit_logs"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     actor_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     actor_type: Mapped[str] = mapped_column(String(20), nullable=False)  # user / system / agent
     action: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
@@ -27,6 +25,4 @@ class AuditLog(Base):
         DateTime, default=datetime.utcnow, nullable=False, index=True
     )
 
-    __table_args__ = (
-        Index("ix_audit_log_actor_created", "actor_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_audit_log_actor_created", "actor_id", "created_at"),)

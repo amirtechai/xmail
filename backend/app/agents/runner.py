@@ -20,9 +20,11 @@ def _build_env_llm_provider() -> BaseLLMProvider | None:
     """Fallback: build LLM provider from env when no DB config is set."""
     if settings.groq_api_key:
         from app.llm.providers.groq import GroqProvider
+
         return GroqProvider(api_key=settings.groq_api_key, model="llama-3.3-70b-versatile")
     if settings.openrouter_api_key:
         from app.llm.providers.openrouter import OpenRouterProvider
+
         return OpenRouterProvider(
             api_key=settings.openrouter_api_key,
             model="meta-llama/llama-3.3-70b-instruct",
@@ -74,7 +76,9 @@ async def run_discovery(
         else:
             llm_provider = _build_env_llm_provider()
             if llm_provider is None:
-                raise ValueError("No LLM provider configured. Set GROQ_API_KEY or OPENROUTER_API_KEY.")
+                raise ValueError(
+                    "No LLM provider configured. Set GROQ_API_KEY or OPENROUTER_API_KEY."
+                )
         compiled = build_graph(llm_provider, session, redis_client)
         config = {"configurable": {"thread_id": run.langgraph_thread_id}}
         final_state = await compiled.ainvoke(initial_state, config=config)

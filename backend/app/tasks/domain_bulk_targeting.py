@@ -99,8 +99,10 @@ async def run_domain_bulk_targeting(session) -> dict:  # type: ignore[no-untyped
                 name_parts = [h.first_name or "", h.last_name or ""]
                 full_name = " ".join(p for p in name_parts if p) or None
                 verified = (
-                    "valid" if h.confidence >= 90
-                    else "catch_all" if h.confidence >= 70
+                    "valid"
+                    if h.confidence >= 90
+                    else "catch_all"
+                    if h.confidence >= 70
                     else "risky"
                 )
                 contact = DiscoveredContact(

@@ -49,7 +49,17 @@ def _is_finance(state: XmailState) -> bool:
         return True
     audience = state.get("audience_type", "").lower()
     keywords = " ".join(state.get("audience_keywords", [])).lower()
-    finance_signals = {"finance", "finans", "hedge", "equity", "investment", "banker", "fund", "cfa", "portfolio"}
+    finance_signals = {
+        "finance",
+        "finans",
+        "hedge",
+        "equity",
+        "investment",
+        "banker",
+        "fund",
+        "cfa",
+        "portfolio",
+    }
     return bool(finance_signals & set((audience + " " + keywords).split()))
 
 
@@ -66,7 +76,9 @@ async def planner_node(state: XmailState, llm_provider) -> dict:  # type: ignore
     )
     user_msg = f"Keywords: {keywords}\nGenerate {count} queries."
     if is_finance:
-        user_msg = f"Focus on finance professionals. Keywords: {keywords}\nGenerate {count} queries."
+        user_msg = (
+            f"Focus on finance professionals. Keywords: {keywords}\nGenerate {count} queries."
+        )
 
     messages = [
         LLMMessage(role="system", content=system_prompt),

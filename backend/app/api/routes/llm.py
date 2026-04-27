@@ -22,7 +22,9 @@ async def list_configs(session: SessionDep, _: AdminUser) -> list[LLMConfigurati
 
 
 @router.post("/", response_model=LLMConfigOut, status_code=status.HTTP_201_CREATED)
-async def create_config(body: LLMConfigCreate, session: SessionDep, _: AdminUser) -> LLMConfiguration:
+async def create_config(
+    body: LLMConfigCreate, session: SessionDep, _: AdminUser
+) -> LLMConfiguration:
     crypto = get_crypto()
     if body.is_default:
         existing = (await session.execute(select(LLMConfiguration))).scalars().all()

@@ -38,9 +38,7 @@ async def list_suppressed(
     if search:
         q = q.where(SuppressionList.email.ilike(f"%{search}%"))
 
-    total_result = await session.execute(
-        select(func.count()).select_from(q.subquery())
-    )
+    total_result = await session.execute(select(func.count()).select_from(q.subquery()))
     total = total_result.scalar_one()
 
     rows_result = await session.execute(q.offset(offset).limit(page_size))
@@ -101,13 +99,15 @@ async def bulk_import(
             skipped += 1
             continue
         h = hash_email(email)
-        existing = (await session.execute(
-            select(SuppressionList).where(SuppressionList.email_hash == h)
-        )).scalar_one_or_none()
+        existing = (
+            await session.execute(select(SuppressionList).where(SuppressionList.email_hash == h))
+        ).scalar_one_or_none()
         if existing:
             skipped += 1
             continue
-        session.add(SuppressionList(email=email, email_hash=h, reason=body.reason, notes=body.notes))
+        session.add(
+            SuppressionList(email=email, email_hash=h, reason=body.reason, notes=body.notes)
+        )
         added += 1
 
     await session.commit()

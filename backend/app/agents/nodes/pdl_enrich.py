@@ -6,7 +6,6 @@ Skipped silently when PDL_API_KEY is not configured.
 Only processes contacts with score > 50 or that have name + company.
 """
 
-
 from app.agents.state import XmailState
 from app.core.logger import get_logger
 
@@ -71,13 +70,15 @@ async def pdl_enrich_node(state: XmailState) -> dict:
                 contact["country"] = person.country
 
             # PDL-specific enrichment data
-            contact.setdefault("enrichment_data", {}).update({
-                "pdl_industry": person.industry,
-                "pdl_seniority": person.seniority,
-                "pdl_skills": person.skills,
-                "pdl_education": person.education,
-                "pdl_likelihood": person.likelihood,
-            })
+            contact.setdefault("enrichment_data", {}).update(
+                {
+                    "pdl_industry": person.industry,
+                    "pdl_seniority": person.seniority,
+                    "pdl_skills": person.skills,
+                    "pdl_education": person.education,
+                    "pdl_likelihood": person.likelihood,
+                }
+            )
 
             # Boost confidence for PDL-verified email
             if person.email and person.email.lower() == email.lower() and person.likelihood >= 6:

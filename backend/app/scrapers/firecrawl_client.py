@@ -53,6 +53,7 @@ class FirecrawlClient:
 
             # Poll for completion
             import asyncio
+
             for _ in range(30):
                 await asyncio.sleep(5)
                 status = await client.get(f"{_BASE}/crawl/{job_id}", headers=self._headers)

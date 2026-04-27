@@ -49,9 +49,10 @@ async def generate_report(
     from sqlalchemy import cast
 
     contacts_result = await session.execute(
-        select(DiscoveredContact).where(
-            cast(DiscoveredContact.discovered_at, SADate) == body.report_date
-        ).order_by(DiscoveredContact.confidence_score.desc()).limit(50)
+        select(DiscoveredContact)
+        .where(cast(DiscoveredContact.discovered_at, SADate) == body.report_date)
+        .order_by(DiscoveredContact.confidence_score.desc())
+        .limit(50)
     )
     contacts = [
         {
@@ -61,7 +62,9 @@ async def generate_report(
             "job_title": c.title,
             "audience_type": c.audience_type_key,
             "confidence_score": c.confidence_score,
-            "verified_status": c.verified_status if isinstance(c.verified_status, str) else (c.verified_status.value if c.verified_status else None),
+            "verified_status": c.verified_status
+            if isinstance(c.verified_status, str)
+            else (c.verified_status.value if c.verified_status else None),
         }
         for c in contacts_result.scalars()
     ]
@@ -89,10 +92,13 @@ async def generate_report(
 @router.get("/download/{report_date}/pdf")
 async def download_pdf(report_date: str, _: CurrentUser) -> FileResponse:
     from datetime import date
+
     try:
         d = date.fromisoformat(report_date)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.") from None
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Use YYYY-MM-DD."
+        ) from None
 
     path = storage.pdf_path(d)
     if not path.exists():
@@ -108,10 +114,13 @@ async def download_pdf(report_date: str, _: CurrentUser) -> FileResponse:
 @router.get("/download/{report_date}/xml")
 async def download_xml(report_date: str, _: CurrentUser) -> FileResponse:
     from datetime import date
+
     try:
         d = date.fromisoformat(report_date)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.") from None
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Use YYYY-MM-DD."
+        ) from None
 
     path = storage.xml_path(d)
     if not path.exists():

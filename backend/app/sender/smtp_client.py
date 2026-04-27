@@ -36,7 +36,9 @@ class SMTPClient:
         sent_email_id: str | None = None,
     ) -> str:
         """Send email with compliance footer. Returns message-id."""
-        html_final, text_final = inject_compliance_footer(html_body, text_body, unsubscribe_token, sent_email_id)
+        html_final, text_final = inject_compliance_footer(
+            html_body, text_body, unsubscribe_token, sent_email_id
+        )
 
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject

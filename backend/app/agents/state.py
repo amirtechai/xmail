@@ -17,12 +17,12 @@ class XmailState(TypedDict):
     # Pipeline progress
     search_queries: list[str]
     raw_urls: list[str]
-    crawled_pages: list[dict]          # [{url, html, text}]
+    crawled_pages: list[dict]  # [{url, html, text}]
     extracted_emails: list[str]
-    enriched_contacts: list[dict]      # [{email, name, company, title, ...}]
-    validated_contacts: list[dict]     # [{email, status, score, ...}]
+    enriched_contacts: list[dict]  # [{email, name, company, title, ...}]
+    validated_contacts: list[dict]  # [{email, status, score, ...}]
     deduplicated_contacts: list[dict]
-    inferred_emails: list[str]      # emails generated via domain pattern inference
+    inferred_emails: list[str]  # emails generated via domain pattern inference
     persisted_count: int
 
     # Control

@@ -14,6 +14,7 @@ from httpx import ASGITransport, AsyncClient
 
 # ── minimal app fixture ────────────────────────────────────────────────────────
 
+
 def _build_webhook_app() -> FastAPI:
     app = FastAPI()
     app.add_middleware(
@@ -23,8 +24,10 @@ def _build_webhook_app() -> FastAPI:
         allow_headers=["*"],
     )
     from app.core.exceptions import register_exception_handlers
+
     register_exception_handlers(app)
     from app.api.routes.webhooks import router
+
     app.include_router(router, prefix="/api")
     return app
 
@@ -42,6 +45,7 @@ async def client(webhook_app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 
+
 def _mg_sig(timestamp: str, token: str, key: str) -> str:
     return hmac.new(key.encode(), (timestamp + token).encode(), hashlib.sha256).hexdigest()
 
@@ -51,6 +55,7 @@ DISPATCH_PATH = "app.api.routes.webhooks._dispatch"
 
 # ── SendGrid (no signing key configured) ─────────────────────────────────────
 
+
 class TestSendgridWebhook:
     @pytest.fixture(autouse=True)
     def no_sg_key(self, monkeypatch):
@@ -58,16 +63,33 @@ class TestSendgridWebhook:
 
     @pytest.mark.asyncio
     async def test_open_event_dispatched(self, client: AsyncClient):
-        payload = [{"event": "open", "email": "user@example.com", "sg_message_id": "msg1", "timestamp": 1714000000}]
+        payload = [
+            {
+                "event": "open",
+                "email": "user@example.com",
+                "sg_message_id": "msg1",
+                "timestamp": 1714000000,
+            }
+        ]
         with patch(DISPATCH_PATH) as mock_dispatch:
             resp = await client.post("/api/webhooks/sendgrid", json=payload)
         assert resp.status_code == 200
         assert resp.json()["queued"] == 1
-        mock_dispatch.assert_called_once_with("sendgrid", "open", "user@example.com", "msg1", mock_dispatch.call_args[0][4], {})
+        mock_dispatch.assert_called_once_with(
+            "sendgrid", "open", "user@example.com", "msg1", mock_dispatch.call_args[0][4], {}
+        )
 
     @pytest.mark.asyncio
     async def test_click_event_includes_url(self, client: AsyncClient):
-        payload = [{"event": "click", "email": "u@e.com", "sg_message_id": "m2", "timestamp": 1714000001, "url": "https://example.com"}]
+        payload = [
+            {
+                "event": "click",
+                "email": "u@e.com",
+                "sg_message_id": "m2",
+                "timestamp": 1714000001,
+                "url": "https://example.com",
+            }
+        ]
         with patch(DISPATCH_PATH) as mock_dispatch:
             resp = await client.post("/api/webhooks/sendgrid", json=payload)
         assert resp.status_code == 200
@@ -76,7 +98,9 @@ class TestSendgridWebhook:
 
     @pytest.mark.asyncio
     async def test_unknown_event_skipped(self, client: AsyncClient):
-        payload = [{"event": "delivered", "email": "u@e.com", "sg_message_id": "m3", "timestamp": 0}]
+        payload = [
+            {"event": "delivered", "email": "u@e.com", "sg_message_id": "m3", "timestamp": 0}
+        ]
         with patch(DISPATCH_PATH) as mock_dispatch:
             resp = await client.post("/api/webhooks/sendgrid", json=payload)
         assert resp.status_code == 200
@@ -106,6 +130,7 @@ class TestSendgridWebhook:
 
 # ── Postmark ──────────────────────────────────────────────────────────────────
 
+
 class TestPostmarkWebhook:
     @pytest.fixture(autouse=True)
     def no_pm_token(self, monkeypatch):
@@ -113,7 +138,12 @@ class TestPostmarkWebhook:
 
     @pytest.mark.asyncio
     async def test_bounce_event(self, client: AsyncClient):
-        payload = {"RecordType": "Bounce", "Email": "bad@bounce.com", "MessageID": "pm1", "BouncedAt": "2026-01-01T00:00:00Z"}
+        payload = {
+            "RecordType": "Bounce",
+            "Email": "bad@bounce.com",
+            "MessageID": "pm1",
+            "BouncedAt": "2026-01-01T00:00:00Z",
+        }
         with patch(DISPATCH_PATH) as mock_dispatch:
             resp = await client.post("/api/webhooks/postmark", json=payload)
         assert resp.status_code == 200
@@ -134,7 +164,9 @@ class TestPostmarkWebhook:
 
     @pytest.mark.asyncio
     async def test_token_verification_rejects_wrong(self, client: AsyncClient, monkeypatch):
-        monkeypatch.setattr("app.api.routes.webhooks.settings.postmark_webhook_token", "correct-token")
+        monkeypatch.setattr(
+            "app.api.routes.webhooks.settings.postmark_webhook_token", "correct-token"
+        )
         resp = await client.post(
             "/api/webhooks/postmark",
             json={"RecordType": "Bounce"},
@@ -144,8 +176,15 @@ class TestPostmarkWebhook:
 
     @pytest.mark.asyncio
     async def test_token_verification_accepts_correct(self, client: AsyncClient, monkeypatch):
-        monkeypatch.setattr("app.api.routes.webhooks.settings.postmark_webhook_token", "correct-token")
-        payload = {"RecordType": "Open", "Recipient": "u@e.com", "MessageID": "pm3", "ReceivedAt": "2026-01-01T00:00:00Z"}
+        monkeypatch.setattr(
+            "app.api.routes.webhooks.settings.postmark_webhook_token", "correct-token"
+        )
+        payload = {
+            "RecordType": "Open",
+            "Recipient": "u@e.com",
+            "MessageID": "pm3",
+            "ReceivedAt": "2026-01-01T00:00:00Z",
+        }
         with patch(DISPATCH_PATH):
             resp = await client.post(
                 "/api/webhooks/postmark",
@@ -156,6 +195,7 @@ class TestPostmarkWebhook:
 
 
 # ── Mailgun ───────────────────────────────────────────────────────────────────
+
 
 class TestMailgunWebhook:
     @pytest.fixture(autouse=True)
@@ -202,7 +242,9 @@ class TestMailgunWebhook:
 
     @pytest.mark.asyncio
     async def test_signature_rejects_wrong(self, client: AsyncClient, monkeypatch):
-        monkeypatch.setattr("app.api.routes.webhooks.settings.mailgun_webhook_signing_key", "real-key")
+        monkeypatch.setattr(
+            "app.api.routes.webhooks.settings.mailgun_webhook_signing_key", "real-key"
+        )
         payload = self._payload("opened")
         resp = await client.post("/api/webhooks/mailgun", json=payload)
         assert resp.status_code == 403
@@ -215,7 +257,12 @@ class TestMailgunWebhook:
         sig = _mg_sig(ts, tok, key)
         payload = {
             "signature": {"timestamp": ts, "token": tok, "signature": sig},
-            "event-data": {"event": "opened", "recipient": "u@e.com", "timestamp": 1714000000, "message": {"headers": {"message-id": "m1"}}},
+            "event-data": {
+                "event": "opened",
+                "recipient": "u@e.com",
+                "timestamp": 1714000000,
+                "message": {"headers": {"message-id": "m1"}},
+            },
         }
         with patch(DISPATCH_PATH):
             resp = await client.post("/api/webhooks/mailgun", json=payload)

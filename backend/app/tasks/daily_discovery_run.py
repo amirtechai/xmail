@@ -87,7 +87,11 @@ async def _run_campaign(campaign_id: str) -> dict:
                 )
                 audience_labels = [a.label_en for a in aud_result.scalars().all()]
 
-            audience_type = audience_labels[0] if audience_labels else (audience_keys[0] if audience_keys else "general")
+            audience_type = (
+                audience_labels[0]
+                if audience_labels
+                else (audience_keys[0] if audience_keys else "general")
+            )
             run = await run_discovery(
                 campaign_id=campaign_id,
                 audience_type=audience_type,

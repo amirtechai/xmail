@@ -29,9 +29,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # Content-Security-Policy — strict for API (no HTML rendering)
         response.headers["Content-Security-Policy"] = (
-            "default-src 'none'; "
-            "frame-ancestors 'none'; "
-            "base-uri 'self';"
+            "default-src 'none'; " "frame-ancestors 'none'; " "base-uri 'self';"
         )
 
         return response

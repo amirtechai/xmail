@@ -1,6 +1,5 @@
 """Unit tests for app.core.auth — JWT helpers and bcrypt password hashing."""
 
-
 import pytest
 from jose import JWTError
 
@@ -14,6 +13,7 @@ from app.core.auth import (
 )
 
 # ── Password hashing ──────────────────────────────────────────────────────────
+
 
 class TestPasswordHashing:
     def test_hash_is_not_plaintext(self):
@@ -42,6 +42,7 @@ class TestPasswordHashing:
 
 # ── JWT access token ──────────────────────────────────────────────────────────
 
+
 class TestAccessToken:
     def test_creates_and_decodes(self):
         token = create_access_token("user-123")
@@ -62,12 +63,14 @@ class TestAccessToken:
 
     def test_expired_token_raises(self):
         from datetime import timedelta
+
         token = create_access_token("user-x", expires_delta=timedelta(seconds=-1))
         with pytest.raises(JWTError):
             decode_token(token)
 
 
 # ── JWT refresh token ─────────────────────────────────────────────────────────
+
 
 class TestRefreshToken:
     def test_refresh_token_type(self):

@@ -21,7 +21,9 @@ async def list_configs(session: SessionDep, _: AdminUser) -> list[SMTPConfigurat
 
 
 @router.post("/", response_model=SMTPConfigOut, status_code=status.HTTP_201_CREATED)
-async def create_config(body: SMTPConfigCreate, session: SessionDep, _: AdminUser) -> SMTPConfiguration:
+async def create_config(
+    body: SMTPConfigCreate, session: SessionDep, _: AdminUser
+) -> SMTPConfiguration:
     crypto = get_crypto()
     if body.is_default:
         # clear existing default
@@ -48,7 +50,9 @@ async def create_config(body: SMTPConfigCreate, session: SessionDep, _: AdminUse
 
 @router.delete("/{config_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_config(config_id: uuid.UUID, session: SessionDep, _: AdminUser) -> None:
-    result = await session.execute(select(SMTPConfiguration).where(SMTPConfiguration.id == config_id))
+    result = await session.execute(
+        select(SMTPConfiguration).where(SMTPConfiguration.id == config_id)
+    )
     config = result.scalar_one_or_none()
     if not config:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SMTP config not found")
@@ -76,7 +80,9 @@ async def test_smtp(
     session: SessionDep,
     _: AdminUser,
 ) -> SMTPTestResponse:
-    result = await session.execute(select(SMTPConfiguration).where(SMTPConfiguration.id == config_id))
+    result = await session.execute(
+        select(SMTPConfiguration).where(SMTPConfiguration.id == config_id)
+    )
     config = result.scalar_one_or_none()
     if not config:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SMTP config not found")

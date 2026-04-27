@@ -25,7 +25,9 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 # ── helpers ────────────────────────────────────────────────────────────────────
 
 
-def _dispatch(provider: str, event_type: str, email: str, message_id: str, ts: str, extra: dict) -> None:
+def _dispatch(
+    provider: str, event_type: str, email: str, message_id: str, ts: str, extra: dict
+) -> None:
     from app.tasks.webhook_processor import process_webhook_event
 
     process_webhook_event.delay(
@@ -69,8 +71,15 @@ async def sendgrid_webhook(
 
     if settings.sendgrid_webhook_public_key:
         if not (x_twilio_email_event_webhook_signature and x_twilio_email_event_webhook_timestamp):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing signature headers")
-        if not verify_sendgrid(raw_body, x_twilio_email_event_webhook_signature, x_twilio_email_event_webhook_timestamp, settings.sendgrid_webhook_public_key):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Missing signature headers"
+            )
+        if not verify_sendgrid(
+            raw_body,
+            x_twilio_email_event_webhook_signature,
+            x_twilio_email_event_webhook_timestamp,
+            settings.sendgrid_webhook_public_key,
+        ):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
     else:
         logger.warning("sendgrid_webhook_no_key_configured")
@@ -78,7 +87,9 @@ async def sendgrid_webhook(
     try:
         events: list[dict] = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON"
+        ) from None
 
     dispatched = 0
     for ev in events:
@@ -123,7 +134,9 @@ async def postmark_webhook(
     try:
         ev: dict = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON"
+        ) from None
 
     record_type = ev.get("RecordType", "")
     event_type = _POSTMARK_EVENT_MAP.get(record_type)
@@ -132,7 +145,12 @@ async def postmark_webhook(
 
     email = ev.get("Email") or ev.get("Recipient", "")
     message_id = ev.get("MessageID", "")
-    raw_ts = ev.get("BouncedAt") or ev.get("ReceivedAt") or ev.get("DeliveredAt") or datetime.utcnow().isoformat()
+    raw_ts = (
+        ev.get("BouncedAt")
+        or ev.get("ReceivedAt")
+        or ev.get("DeliveredAt")
+        or datetime.utcnow().isoformat()
+    )
     extra: dict = {}
     if event_type == "click":
         extra["url"] = ev.get("OriginalLink", "")
@@ -157,7 +175,9 @@ async def mailgun_webhook(request: Request) -> dict:
     try:
         body: dict = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON"
+        ) from None
 
     sig_block = body.get("signature", {})
     timestamp = str(sig_block.get("timestamp", ""))

@@ -21,6 +21,7 @@ class SuppressionOut(BaseModel):
         # Coerce UUID id to str before Pydantic sees it
         if hasattr(obj, "__dict__"):
             import uuid as _uuid
+
             raw_id = getattr(obj, "id", None)
             if isinstance(raw_id, _uuid.UUID):
                 obj.__dict__["id"] = str(raw_id)

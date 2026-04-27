@@ -22,9 +22,7 @@ class SuppressionReason(str, Enum):
 class SuppressionList(Base):
     __tablename__ = "suppression_list"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     email_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
     reason: Mapped[str] = mapped_column(String(30), nullable=False, index=True)

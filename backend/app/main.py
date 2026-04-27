@@ -68,6 +68,7 @@ def create_app() -> FastAPI:
 
     # Security headers (innermost — runs after CORS, on every response)
     from app.core.middleware import SecurityHeadersMiddleware
+
     app.add_middleware(SecurityHeadersMiddleware)
 
     # CORS

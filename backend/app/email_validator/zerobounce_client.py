@@ -32,9 +32,9 @@ _STATUS_MAP: dict[str, str] = {
 @dataclass
 class ZBResult:
     email: str
-    status: str          # valid | invalid | risky | catch_all
+    status: str  # valid | invalid | risky | catch_all
     sub_status: str
-    score: int           # 0–100 mapped from ZB confidence
+    score: int  # 0–100 mapped from ZB confidence
     mx_valid: bool
     is_catch_all: bool
     is_disposable: bool
@@ -55,7 +55,14 @@ def _map_result(item: dict) -> ZBResult:
     elif is_role:
         status = "role_based"
 
-    score_map = {"valid": 85, "catch_all": 45, "risky": 35, "invalid": 5, "disposable": 5, "role_based": 30}
+    score_map = {
+        "valid": 85,
+        "catch_all": 45,
+        "risky": 35,
+        "invalid": 5,
+        "disposable": 5,
+        "role_based": 30,
+    }
     score = score_map.get(status, 30)
 
     return ZBResult(
@@ -86,7 +93,10 @@ class ZeroBounceClient:
         async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
             for i in range(0, len(emails), _BATCH_SIZE):
                 chunk = emails[i : i + _BATCH_SIZE]
-                payload = {"api_key": self._key, "email_batch": [{"email_address": e} for e in chunk]}
+                payload = {
+                    "api_key": self._key,
+                    "email_batch": [{"email_address": e} for e in chunk],
+                }
                 r = await client.post(_BATCH_URL, json=payload)
                 r.raise_for_status()
                 data = r.json()

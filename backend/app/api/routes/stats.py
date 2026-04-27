@@ -54,12 +54,16 @@ async def dashboard_stats(session: SessionDep, _: CurrentUser) -> dict:
 
     # 30-day trend from DailyReport
     trend_rows = (
-        await session.execute(
-            select(DailyReport)
-            .where(DailyReport.report_date >= month_ago)
-            .order_by(DailyReport.report_date.asc())
+        (
+            await session.execute(
+                select(DailyReport)
+                .where(DailyReport.report_date >= month_ago)
+                .order_by(DailyReport.report_date.asc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     trend = [
         {
             "date": str(r.report_date),

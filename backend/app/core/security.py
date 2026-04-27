@@ -11,9 +11,37 @@ import bleach
 # ── Allowed HTML tags/attrs for campaign bodies ───────────────────────────────
 
 _ALLOWED_TAGS = [
-    "a", "b", "blockquote", "br", "code", "div", "em", "h1", "h2", "h3",
-    "h4", "h5", "h6", "hr", "i", "img", "li", "ol", "p", "pre", "s",
-    "span", "strong", "table", "tbody", "td", "th", "thead", "tr", "u", "ul",
+    "a",
+    "b",
+    "blockquote",
+    "br",
+    "code",
+    "div",
+    "em",
+    "h1",
+    "h2",
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "hr",
+    "i",
+    "img",
+    "li",
+    "ol",
+    "p",
+    "pre",
+    "s",
+    "span",
+    "strong",
+    "table",
+    "tbody",
+    "td",
+    "th",
+    "thead",
+    "tr",
+    "u",
+    "ul",
 ]
 _ALLOWED_ATTRS: dict[str, list[str]] = {
     "a": ["href", "title", "target", "rel"],
@@ -75,7 +103,7 @@ def is_safe_url(url: str) -> bool:
 
 _MAX_ATTEMPTS = 5
 _LOCKOUT_SECONDS = 900  # 15 minutes
-_ATTEMPT_WINDOW = 600   # 10 minutes sliding window
+_ATTEMPT_WINDOW = 600  # 10 minutes sliding window
 
 
 def _attempt_key(email: str) -> str:

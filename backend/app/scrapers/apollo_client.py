@@ -122,25 +122,31 @@ class ApolloClient:
     def _parse_response(self, data: dict) -> list[ApolloPerson]:
         people = []
         for p in data.get("people", []) + data.get("contacts", []):
-            email = (
-                p.get("email")
-                or (p.get("contact", {}) or {}).get("email")
-            )
+            email = p.get("email") or (p.get("contact", {}) or {}).get("email")
             if not email or "@" not in email:
                 continue
-            org = p.get("organization") or p.get("employment_history", [{}])[0] if p.get("employment_history") else {}
-            people.append(ApolloPerson(
-                email=email.lower().strip(),
-                first_name=p.get("first_name"),
-                last_name=p.get("last_name"),
-                title=p.get("title"),
-                company=p.get("organization_name") or (org.get("name") if isinstance(org, dict) else None),
-                company_domain=p.get("organization", {}).get("primary_domain") if isinstance(p.get("organization"), dict) else None,
-                linkedin_url=p.get("linkedin_url"),
-                city=p.get("city"),
-                country=p.get("country"),
-                email_status=p.get("email_status", "unknown"),
-                seniority=p.get("seniority"),
-                departments=p.get("departments", []),
-            ))
+            org = (
+                p.get("organization") or p.get("employment_history", [{}])[0]
+                if p.get("employment_history")
+                else {}
+            )
+            people.append(
+                ApolloPerson(
+                    email=email.lower().strip(),
+                    first_name=p.get("first_name"),
+                    last_name=p.get("last_name"),
+                    title=p.get("title"),
+                    company=p.get("organization_name")
+                    or (org.get("name") if isinstance(org, dict) else None),
+                    company_domain=p.get("organization", {}).get("primary_domain")
+                    if isinstance(p.get("organization"), dict)
+                    else None,
+                    linkedin_url=p.get("linkedin_url"),
+                    city=p.get("city"),
+                    country=p.get("country"),
+                    email_status=p.get("email_status", "unknown"),
+                    seniority=p.get("seniority"),
+                    departments=p.get("departments", []),
+                )
+            )
         return people

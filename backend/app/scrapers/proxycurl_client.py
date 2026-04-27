@@ -39,11 +39,7 @@ def extract_fields(profile: dict) -> dict:
         or (profile.get("experiences") or [{}])[0].get("company")
         or None
     )
-    title = (
-        (current_exp or {}).get("title")
-        or profile.get("occupation")
-        or None
-    )
+    title = (current_exp or {}).get("title") or profile.get("occupation") or None
     return {
         "first_name": profile.get("first_name") or None,
         "last_name": profile.get("last_name") or None,

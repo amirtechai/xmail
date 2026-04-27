@@ -81,7 +81,11 @@ def _parse_xlsx(content: bytes) -> list[dict[str, str]]:
     headers = [_normalise_header(str(h)) if h is not None else "" for h in all_rows[0]]
     result = []
     for row in all_rows[1:]:
-        d = {headers[i]: str(v).strip() if v is not None else "" for i, v in enumerate(row) if i < len(headers)}
+        d = {
+            headers[i]: str(v).strip() if v is not None else ""
+            for i, v in enumerate(row)
+            if i < len(headers)
+        }
         result.append(d)
     return result
 
@@ -105,7 +109,9 @@ def _serialize(c: DiscoveredContact) -> dict:
         "language": c.language,
         "confidence_score": c.confidence_score,
         "relevance_score": c.relevance_score,
-        "verified_status": c.verified_status if isinstance(c.verified_status, str) else (c.verified_status.value if c.verified_status else None),
+        "verified_status": c.verified_status
+        if isinstance(c.verified_status, str)
+        else (c.verified_status.value if c.verified_status else None),
         "mx_valid": c.mx_valid,
         "smtp_valid": c.smtp_valid,
         "is_disposable": c.is_disposable,
@@ -160,7 +166,12 @@ async def list_contacts(
     q = q.order_by(order).offset((page - 1) * page_size).limit(page_size)
     rows = (await session.execute(q)).scalars().all()
 
-    return {"items": [_serialize(c) for c in rows], "total": total, "page": page, "page_size": page_size}
+    return {
+        "items": [_serialize(c) for c in rows],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @router.get("/export")
@@ -248,9 +259,7 @@ async def bulk_delete_contacts(
     if not uuids:
         return {"deleted": 0}
 
-    result = await session.execute(
-        select(DiscoveredContact).where(DiscoveredContact.id.in_(uuids))
-    )
+    result = await session.execute(select(DiscoveredContact).where(DiscoveredContact.id.in_(uuids)))
     contacts = result.scalars().all()
     for c in contacts:
         await session.delete(c)
@@ -267,18 +276,29 @@ async def import_contacts(
 ) -> ImportResult:
     filename = file.filename or ""
     if not filename.lower().endswith((".csv", ".xlsx")):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only .csv and .xlsx files are supported")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only .csv and .xlsx files are supported",
+        )
 
     content = await file.read()
     if len(content) > 10 * 1024 * 1024:  # 10 MB guard
-        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds 10 MB limit")
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="File exceeds 10 MB limit"
+        )
 
     rows = _parse_xlsx(content) if filename.lower().endswith(".xlsx") else _parse_csv(content)
 
     if not rows:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File is empty or has no parseable rows")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="File is empty or has no parseable rows",
+        )
     if len(rows) > _MAX_IMPORT_ROWS:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"File exceeds {_MAX_IMPORT_ROWS} row limit")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"File exceeds {_MAX_IMPORT_ROWS} row limit",
+        )
 
     # Collect all candidate emails for a single bulk existence check
     candidate_emails: list[str] = []
@@ -288,9 +308,13 @@ async def import_contacts(
             candidate_emails.append(e)
 
     existing: set[str] = set(
-        (await session.execute(
-            select(DiscoveredContact.email).where(DiscoveredContact.email.in_(candidate_emails))
-        )).scalars().all()
+        (
+            await session.execute(
+                select(DiscoveredContact.email).where(DiscoveredContact.email.in_(candidate_emails))
+            )
+        )
+        .scalars()
+        .all()
     )
 
     imported = 0
@@ -346,7 +370,11 @@ async def import_contacts(
             await session.flush()
 
     await session.commit()
-    return ImportResult(imported=imported, skipped=skipped, errors=[{"row": e["row"], "email": e["email"], "error": e["error"]} for e in errors[:50]])
+    return ImportResult(
+        imported=imported,
+        skipped=skipped,
+        errors=[{"row": e["row"], "email": e["email"], "error": e["error"]} for e in errors[:50]],
+    )
 
 
 @router.post("/{contact_id}/enrich-linkedin")
@@ -364,9 +392,9 @@ async def enrich_linkedin(
             detail="PROXYCURL_API_KEY is not configured.",
         )
 
-    contact = (await session.execute(
-        select(DiscoveredContact).where(DiscoveredContact.id == contact_id)
-    )).scalar_one_or_none()
+    contact = (
+        await session.execute(select(DiscoveredContact).where(DiscoveredContact.id == contact_id))
+    ).scalar_one_or_none()
     if not contact:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
 
@@ -426,11 +454,17 @@ async def verify_bulk(
         contact_ids = [str(i) for i in body.ids]
     else:
         # Queue all currently unverified contacts (up to 5000 at a time)
-        rows = (await session.execute(
-            select(DiscoveredContact.id)
-            .where(DiscoveredContact.verified_status == "unverified")
-            .limit(5000)
-        )).scalars().all()
+        rows = (
+            (
+                await session.execute(
+                    select(DiscoveredContact.id)
+                    .where(DiscoveredContact.verified_status == "unverified")
+                    .limit(5000)
+                )
+            )
+            .scalars()
+            .all()
+        )
         contact_ids = [str(r) for r in rows]
 
     if not contact_ids:

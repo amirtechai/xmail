@@ -26,14 +26,14 @@ _MAX_CONCURRENT_VALIDATIONS = 10
 
 # Ordered by prevalence in the wild — first match wins during detection
 _FORMATS: list[tuple[str, ...]] = [
-    ("first.last",  "{fl}.{ll}"),
-    ("first_last",  "{fl}_{ll}"),
-    ("flast",       "{f}{ll}"),
-    ("firstl",      "{fl}{l}"),
-    ("f.last",      "{f}.{ll}"),
-    ("first.l",     "{fl}.{l}"),
-    ("first",       "{fl}"),
-    ("last",        "{ll}"),
+    ("first.last", "{fl}.{ll}"),
+    ("first_last", "{fl}_{ll}"),
+    ("flast", "{f}{ll}"),
+    ("firstl", "{fl}{l}"),
+    ("f.last", "{f}.{ll}"),
+    ("first.l", "{fl}.{l}"),
+    ("first", "{fl}"),
+    ("last", "{ll}"),
 ]
 
 
@@ -112,12 +112,17 @@ async def infer_email_pattern_node(state: XmailState) -> dict:
             email = f"{_render(fmt_tmpl, first, last)}@{domain}"
             if email not in existing:
                 existing.add(email)  # prevent duplicates within this loop
-                candidates.append((email, {
-                    "name": f"{first} {last}",
-                    "company": domain,
-                    "source_url": f"inferred://{domain}",
-                    "inferred": True,
-                }))
+                candidates.append(
+                    (
+                        email,
+                        {
+                            "name": f"{first} {last}",
+                            "company": domain,
+                            "source_url": f"inferred://{domain}",
+                            "inferred": True,
+                        },
+                    )
+                )
 
     if not candidates:
         logger.info("infer_pattern_done", new=0)

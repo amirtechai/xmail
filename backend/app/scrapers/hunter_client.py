@@ -40,17 +40,21 @@ class HunterClient:
             r.raise_for_status()
         results = []
         for item in r.json().get("data", {}).get("emails", []):
-            results.append(HunterEmail(
-                email=item["value"],
-                first_name=item.get("first_name"),
-                last_name=item.get("last_name"),
-                position=item.get("position"),
-                linkedin_url=item.get("linkedin"),
-                confidence=item.get("confidence", 0),
-            ))
+            results.append(
+                HunterEmail(
+                    email=item["value"],
+                    first_name=item.get("first_name"),
+                    last_name=item.get("last_name"),
+                    position=item.get("position"),
+                    linkedin_url=item.get("linkedin"),
+                    confidence=item.get("confidence", 0),
+                )
+            )
         return results
 
-    async def email_finder(self, domain: str, first_name: str, last_name: str) -> HunterFinderResult:
+    async def email_finder(
+        self, domain: str, first_name: str, last_name: str
+    ) -> HunterFinderResult:
         params = {
             "domain": domain,
             "first_name": first_name,

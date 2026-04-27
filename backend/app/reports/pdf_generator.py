@@ -108,23 +108,27 @@ def _kpi_table(report: Any, styles: dict) -> Table:
 
     col_widths = [6 * cm, 2.5 * cm, 6 * cm, 2.5 * cm]
     t = Table(rows, colWidths=col_widths)
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), _DARK),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 9),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_BG]),
-        ("GRID", (0, 0), (-1, -1), 0.5, _BORDER),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 5),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ("LEFTPADDING", (0, 0), (-1, -1), 6),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 6),
-        ("FONTNAME", (1, 1), (1, -1), "Helvetica-Bold"),
-        ("FONTNAME", (3, 1), (3, -1), "Helvetica-Bold"),
-        ("ALIGN", (1, 1), (1, -1), "RIGHT"),
-        ("ALIGN", (3, 1), (3, -1), "RIGHT"),
-    ]))
+    t.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), _DARK),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 9),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_BG]),
+                ("GRID", (0, 0), (-1, -1), 0.5, _BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("FONTNAME", (1, 1), (1, -1), "Helvetica-Bold"),
+                ("FONTNAME", (3, 1), (3, -1), "Helvetica-Bold"),
+                ("ALIGN", (1, 1), (1, -1), "RIGHT"),
+                ("ALIGN", (3, 1), (3, -1), "RIGHT"),
+            ]
+        )
+    )
     return t
 
 
@@ -132,33 +136,39 @@ def _contacts_table(contacts: list[dict], styles: dict) -> Table:
     headers = ["#", "Email", "Company", "Title", "Score", "Status", "Category"]
     rows = [headers]
     for i, c in enumerate(contacts[:50], 1):
-        rows.append([
-            str(i),
-            c.get("email", ""),
-            (c.get("company") or "")[:30],
-            (c.get("title") or "")[:25],
-            str(c.get("confidence_score", "")),
-            c.get("verified_status", ""),
-            (c.get("audience_type") or "")[:20],
-        ])
+        rows.append(
+            [
+                str(i),
+                c.get("email", ""),
+                (c.get("company") or "")[:30],
+                (c.get("title") or "")[:25],
+                str(c.get("confidence_score", "")),
+                c.get("verified_status", ""),
+                (c.get("audience_type") or "")[:20],
+            ]
+        )
 
     col_widths = [0.8 * cm, 5.5 * cm, 3.5 * cm, 3.5 * cm, 1.2 * cm, 2 * cm, 3 * cm]
     t = Table(rows, colWidths=col_widths, repeatRows=1)
-    t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), _DARK),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("FONTSIZE", (0, 0), (-1, -1), 7),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_BG]),
-        ("GRID", (0, 0), (-1, -1), 0.4, _BORDER),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("TOPPADDING", (0, 0), (-1, -1), 3),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-        ("LEFTPADDING", (0, 0), (-1, -1), 4),
-        ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-        ("ALIGN", (0, 1), (0, -1), "CENTER"),
-        ("ALIGN", (4, 1), (4, -1), "CENTER"),
-    ]))
+    t.setStyle(
+        TableStyle(
+            [
+                ("BACKGROUND", (0, 0), (-1, 0), _DARK),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+                ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 7),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, _LIGHT_BG]),
+                ("GRID", (0, 0), (-1, -1), 0.4, _BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("TOPPADDING", (0, 0), (-1, -1), 3),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                ("ALIGN", (0, 1), (0, -1), "CENTER"),
+                ("ALIGN", (4, 1), (4, -1), "CENTER"),
+            ]
+        )
+    )
     return t
 
 
@@ -183,10 +193,12 @@ def generate_pdf(
 
     # Header
     story.append(Paragraph("Xmail — Daily Outreach Report", styles["title"]))
-    story.append(Paragraph(
-        f"PriceONN.com &nbsp;|&nbsp; {report.report_date.strftime('%B %d, %Y')}",
-        styles["subtitle"],
-    ))
+    story.append(
+        Paragraph(
+            f"PriceONN.com &nbsp;|&nbsp; {report.report_date.strftime('%B %d, %Y')}",
+            styles["subtitle"],
+        )
+    )
     story.append(Spacer(1, 0.3 * cm))
 
     # KPI section
@@ -196,19 +208,23 @@ def generate_pdf(
 
     # Contacts section
     if contacts:
-        story.append(Paragraph(
-            f"Discovered Contacts — {report.report_date.strftime('%Y-%m-%d')} "
-            f"(showing up to 50 of {report.contacts_discovered})",
-            styles["section"],
-        ))
+        story.append(
+            Paragraph(
+                f"Discovered Contacts — {report.report_date.strftime('%Y-%m-%d')} "
+                f"(showing up to 50 of {report.contacts_discovered})",
+                styles["section"],
+            )
+        )
         story.append(_contacts_table(contacts, styles))
 
     # Footer
     story.append(Spacer(1, 0.5 * cm))
-    story.append(Paragraph(
-        f"Generated by Xmail &nbsp;|&nbsp; {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
-        styles["footer"],
-    ))
+    story.append(
+        Paragraph(
+            f"Generated by Xmail &nbsp;|&nbsp; {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}",
+            styles["footer"],
+        )
+    )
 
     doc.build(story)
     pdf_bytes = buffer.getvalue()

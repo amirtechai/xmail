@@ -11,6 +11,7 @@ class OpenAIProvider(CustomProvider):
 
     async def list_models(self) -> list[str]:
         import httpx
+
         async with httpx.AsyncClient(timeout=30) as client:
             resp = await client.get(
                 f"{self.base_url}/models",

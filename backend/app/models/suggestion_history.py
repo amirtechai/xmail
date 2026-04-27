@@ -21,18 +21,14 @@ class SuggestionStatus(str, Enum):
 class SuggestionHistory(Base):
     __tablename__ = "suggestion_history"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     contact_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
     list_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     campaign_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     status: Mapped[str] = mapped_column(
         String(30), default=SuggestionStatus.PENDING.value, nullable=False, index=True
     )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, nullable=False
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False)
 
     __table_args__ = (
         # Each contact appears only once across all suggestion history

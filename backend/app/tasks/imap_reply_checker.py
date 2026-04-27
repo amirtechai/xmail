@@ -26,6 +26,7 @@ _EXECUTOR = ThreadPoolExecutor(max_workers=4, thread_name_prefix="imap")
 @celery_app.task(name="app.tasks.imap_reply_checker.check_imap_replies")
 def check_imap_replies() -> dict:
     import asyncio
+
     loop = asyncio.new_event_loop()
     try:
         return loop.run_until_complete(_run())
@@ -51,28 +52,28 @@ async def _run() -> dict:
     crypto = get_crypto()
 
     async with async_session() as session:
-        smtp_configs = (
-            await session.execute(select(SMTPConfiguration))
-        ).scalars().all()
+        smtp_configs = (await session.execute(select(SMTPConfiguration))).scalars().all()
 
         # Pre-fetch sent emails that could be replied to
         sent_rows = (
-            await session.execute(
-                select(SentEmail)
-                .where(
-                    SentEmail.sent_at >= window_start,
-                    SentEmail.message_id.is_not(None),
-                    SentEmail.replied_at.is_(None),
+            (
+                await session.execute(
+                    select(SentEmail)
+                    .where(
+                        SentEmail.sent_at >= window_start,
+                        SentEmail.message_id.is_not(None),
+                        SentEmail.replied_at.is_(None),
+                    )
+                    .limit(5000)
                 )
-                .limit(5000)
             )
-        ).scalars().all()
+            .scalars()
+            .all()
+        )
 
         # message_id → SentEmail (strip angle brackets)
         mid_map: dict[str, SentEmail] = {
-            (s.message_id or "").strip().strip("<>"): s
-            for s in sent_rows
-            if s.message_id
+            (s.message_id or "").strip().strip("<>"): s for s in sent_rows if s.message_id
         }
 
         if not mid_map:
@@ -119,6 +120,7 @@ async def _fetch_inbox_reply_tos(
 ) -> list[str]:
     """Run synchronous IMAP fetch in thread pool; return list of In-Reply-To values."""
     import asyncio
+
     loop = asyncio.get_event_loop()
     return await loop.run_in_executor(
         _EXECUTOR,

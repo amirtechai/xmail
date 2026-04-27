@@ -33,9 +33,9 @@ async def _send(task_self, campaign_id: str) -> dict:
 
     async with async_session_factory() as session:
         # Load campaign
-        campaign = (await session.execute(
-            select(Campaign).where(Campaign.id == _uuid.UUID(campaign_id))
-        )).scalar_one_or_none()
+        campaign = (
+            await session.execute(select(Campaign).where(Campaign.id == _uuid.UUID(campaign_id)))
+        ).scalar_one_or_none()
 
         if not campaign:
             logger.warning("send_campaign_not_found", campaign_id=campaign_id)
@@ -45,9 +45,11 @@ async def _send(task_self, campaign_id: str) -> dict:
             logger.warning("send_campaign_no_smtp", campaign_id=campaign_id)
             return {"error": "no_smtp_config"}
 
-        smtp = (await session.execute(
-            select(SMTPConfiguration).where(SMTPConfiguration.id == campaign.smtp_config_id)
-        )).scalar_one_or_none()
+        smtp = (
+            await session.execute(
+                select(SMTPConfiguration).where(SMTPConfiguration.id == campaign.smtp_config_id)
+            )
+        ).scalar_one_or_none()
 
         if not smtp:
             return {"error": "smtp_config_not_found"}
@@ -95,10 +97,14 @@ async def _send(task_self, campaign_id: str) -> dict:
         contacts_q = (
             select(DiscoveredContact)
             .where(DiscoveredContact.audience_type_key.in_(audience_keys))
-            .where(DiscoveredContact.verified_status.in_([
-                VerifiedStatus.VALID.value,
-                VerifiedStatus.CATCH_ALL.value,
-            ]))
+            .where(
+                DiscoveredContact.verified_status.in_(
+                    [
+                        VerifiedStatus.VALID.value,
+                        VerifiedStatus.CATCH_ALL.value,
+                    ]
+                )
+            )
             .where(DiscoveredContact.id.not_in(already_sent_subq))
             .limit(batch_size)
         )
@@ -126,6 +132,7 @@ async def _send(task_self, campaign_id: str) -> dict:
 
             def interpolate(t: str, _fn: str = first_name, _cn: str = company_name) -> str:
                 return t.replace("{first_name}", _fn).replace("{company}", _cn)
+
             body_hash = hashlib.sha256(body_html.encode()).hexdigest()
 
             sent_email = SentEmail(

@@ -57,7 +57,9 @@ async def list_audit_logs(
     total_res = await session.execute(select(func.count()).select_from(q.subquery()))
     total = total_res.scalar_one()
 
-    rows = (await session.execute(q.offset((page - 1) * page_size).limit(page_size))).scalars().all()
+    rows = (
+        (await session.execute(q.offset((page - 1) * page_size).limit(page_size))).scalars().all()
+    )
     return AuditLogPage(
         items=[AuditLogOut.model_validate(r) for r in rows],
         total=total,

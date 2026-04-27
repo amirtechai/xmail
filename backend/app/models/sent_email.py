@@ -25,11 +25,11 @@ class SentEmailStatus(str, Enum):
 class SentEmail(Base):
     __tablename__ = "sent_emails"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     campaign_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
-    contact_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    contact_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True, index=True
+    )
     smtp_config_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     subject: Mapped[str] = mapped_column(String(255), nullable=False)
     # SHA256 of body to detect template drift
@@ -44,7 +44,9 @@ class SentEmail(Base):
     # [{url: str, timestamp: str}, ...]
     click_events: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
     # Set when this email is a follow-up sequence step (NULL = initial campaign send)
-    sequence_step_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True, index=True)
+    sequence_step_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), nullable=True, index=True
+    )
     # 'A' or 'B' when A/B testing is active; NULL otherwise
     ab_variant: Mapped[str | None] = mapped_column(String(1), nullable=True)
     # Recipient address stored for bounce/suppression lookups

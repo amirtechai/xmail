@@ -71,5 +71,7 @@ async def _refresh() -> dict:
         if feeds_ok:
             await session.commit()
 
-    logger.info("rss_refresh_done", feeds_ok=feeds_ok, feeds_error=feeds_error, entries=total_entries)
+    logger.info(
+        "rss_refresh_done", feeds_ok=feeds_ok, feeds_error=feeds_error, entries=total_entries
+    )
     return {"feeds_ok": feeds_ok, "feeds_error": feeds_error, "total_entries": total_entries}

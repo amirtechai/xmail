@@ -13,6 +13,7 @@ from app.models.smtp_config import SMTPConfiguration
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+
 def _make_campaign(
     hourly_limit: int = 50,
     attachments_metadata: dict | None = None,
@@ -86,6 +87,7 @@ def _make_session_factory(exec_side_effect) -> tuple[AsyncMock, MagicMock]:
 
 # ── tests ─────────────────────────────────────────────────────────────────────
 
+
 class TestCampaignRunnerNotFound:
     @pytest.mark.asyncio
     async def test_missing_campaign_returns_error(self) -> None:
@@ -150,9 +152,7 @@ class TestRateLimiting:
 
         assert result["status"] == "rate_limited"
         assert result["retry_in"] == 3600
-        task_self.apply_async.assert_called_once_with(
-            args=[str(campaign.id)], countdown=3600
-        )
+        task_self.apply_async.assert_called_once_with(args=[str(campaign.id)], countdown=3600)
 
     @pytest.mark.asyncio
     async def test_batch_capped_by_remaining(self) -> None:
@@ -174,7 +174,9 @@ class TestRateLimiting:
             if call_count == 2:
                 return _scalar_one(smtp)
             if call_count == 3:
-                r = MagicMock(); r.scalar_one.return_value = 7; return r
+                r = MagicMock()
+                r.scalar_one.return_value = 7
+                return r
             return _scalars_all(contacts)
 
         session, factory = _make_session_factory(_exec)
@@ -212,7 +214,9 @@ class TestSendLoop:
             if call_count == 2:
                 return _scalar_one(smtp)
             if call_count == 3:
-                r = MagicMock(); r.scalar_one.return_value = 0; return r
+                r = MagicMock()
+                r.scalar_one.return_value = 0
+                return r
             return _scalars_all(contacts)
 
         session, factory = _make_session_factory(_exec)
@@ -247,7 +251,9 @@ class TestSendLoop:
             if call_count == 2:
                 return _scalar_one(smtp)
             if call_count == 3:
-                r = MagicMock(); r.scalar_one.return_value = 0; return r
+                r = MagicMock()
+                r.scalar_one.return_value = 0
+                return r
             return _scalars_all(contacts)
 
         session, factory = _make_session_factory(_exec)
@@ -281,7 +287,9 @@ class TestSendLoop:
             if call_count == 2:
                 return _scalar_one(smtp)
             if call_count == 3:
-                r = MagicMock(); r.scalar_one.return_value = 0; return r
+                r = MagicMock()
+                r.scalar_one.return_value = 0
+                return r
             return _scalars_all([])
 
         session, factory = _make_session_factory(_exec)
@@ -316,7 +324,9 @@ class TestABSplit:
             if call_count == 2:
                 return _scalar_one(smtp)
             if call_count == 3:
-                r = MagicMock(); r.scalar_one.return_value = 0; return r
+                r = MagicMock()
+                r.scalar_one.return_value = 0
+                return r
             return _scalars_all(contacts)
 
         session, factory = _make_session_factory(_exec)
@@ -328,6 +338,7 @@ class TestABSplit:
         def capture_add(obj: object) -> None:
             if isinstance(obj, SentEmail):
                 added_emails.append(obj)
+
         session.add = capture_add
 
         with (

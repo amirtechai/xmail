@@ -13,6 +13,7 @@ from app.models.user import User, UserRole
 
 # ── Test user factory ─────────────────────────────────────────────────────────
 
+
 def make_user(
     email: str = "test@example.com",
     role: str = UserRole.ADMIN.value,
@@ -21,6 +22,7 @@ def make_user(
     totp_enabled: bool = False,
 ) -> User:
     import os
+
     raw_pw = password or os.environ.get("TEST_USER_PASSWORD") or os.urandom(16).hex()
     user = User()
     user.id = uuid.uuid4()
@@ -50,6 +52,7 @@ def admin_user() -> User:
 
 # ── Mock session ──────────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def mock_session() -> AsyncMock:
     session = AsyncMock(spec=AsyncSession)
@@ -75,8 +78,10 @@ def make_scalar_result():
 
 # ── Auth token helper ─────────────────────────────────────────────────────────
 
+
 @pytest.fixture
 def auth_headers(test_user: User) -> dict[str, str]:
     from app.core.auth import create_access_token
+
     token = create_access_token(str(test_user.id))
     return {"Authorization": f"Bearer {token}"}

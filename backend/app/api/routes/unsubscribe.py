@@ -109,14 +109,14 @@ async def confirm_unsubscribe(token: str, session: SessionDep) -> HTMLResponse:
             )
         )
 
-    existing = await session.execute(
-        select(SuppressionList).where(SuppressionList.email == email)
-    )
+    existing = await session.execute(select(SuppressionList).where(SuppressionList.email == email))
     if not existing.scalar_one_or_none():
-        session.add(SuppressionList(
-            email=email,
-            reason=SuppressionReason.UNSUBSCRIBED.value,
-        ))
+        session.add(
+            SuppressionList(
+                email=email,
+                reason=SuppressionReason.UNSUBSCRIBED.value,
+            )
+        )
     await session.commit()
 
     return HTMLResponse(

@@ -138,6 +138,7 @@ async def run_bot(body: RunRequest, session: SessionDep, _: AdminUser) -> dict:
         await session.commit()
 
         from app.tasks.daily_discovery_run import run_discovery_cycle
+
         run_discovery_cycle.delay()
 
     return {
@@ -166,9 +167,7 @@ async def update_config(body: BotConfigUpdate, session: SessionDep, _: AdminUser
 
 @router.get("/runs")
 async def list_runs(session: SessionDep, _: AdminUser) -> list:
-    result = await session.execute(
-        select(AgentRun).order_by(AgentRun.started_at.desc()).limit(50)
-    )
+    result = await session.execute(select(AgentRun).order_by(AgentRun.started_at.desc()).limit(50))
     runs = result.scalars().all()
     return [
         {
@@ -191,11 +190,13 @@ async def event_stream(session: SessionDep, _: AdminUser) -> StreamingResponse:
     async def generator() -> AsyncGenerator[str, None]:
         for _ in range(120):
             bot = await _get_or_create_bot_state(session)
-            data = json.dumps({
-                "state": bot.state,
-                "is_running": bot.is_running,
-                "daily_email_count": bot.daily_email_count,
-            })
+            data = json.dumps(
+                {
+                    "state": bot.state,
+                    "is_running": bot.is_running,
+                    "daily_email_count": bot.daily_email_count,
+                }
+            )
             yield f"data: {data}\n\n"
             await asyncio.sleep(1)
 

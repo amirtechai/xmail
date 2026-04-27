@@ -23,12 +23,18 @@ async def rss_feed_reader_node(state: XmailState, session) -> dict:  # type: ign
     from app.models.scraping_source import ScrapingSource, SourceType
 
     try:
-        sources = (await session.execute(
-            select(ScrapingSource).where(
-                ScrapingSource.is_active.is_(True),
-                ScrapingSource.source_type == SourceType.NEWS.value,
+        sources = (
+            (
+                await session.execute(
+                    select(ScrapingSource).where(
+                        ScrapingSource.is_active.is_(True),
+                        ScrapingSource.source_type == SourceType.NEWS.value,
+                    )
+                )
             )
-        )).scalars().all()
+            .scalars()
+            .all()
+        )
     except Exception as exc:
         logger.warning("rss_db_error", reason=str(exc))
         return {}

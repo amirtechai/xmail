@@ -1,9 +1,9 @@
 """Unit tests for app.core.security — HTML sanitization, SSRF guard, brute-force."""
 
-
 from app.core.security import is_safe_url, sanitize_html
 
 # ── sanitize_html ─────────────────────────────────────────────────────────────
+
 
 class TestSanitizeHtml:
     def test_allows_safe_tags(self):
@@ -48,12 +48,13 @@ class TestSanitizeHtml:
         assert "<iframe" not in result
 
     def test_strips_style_block(self):
-        result = sanitize_html('<style>body{display:none}</style><p>ok</p>')
+        result = sanitize_html("<style>body{display:none}</style><p>ok</p>")
         assert "<style>" not in result
         assert "<p>ok</p>" in result
 
 
 # ── is_safe_url ───────────────────────────────────────────────────────────────
+
 
 class TestIsSafeUrl:
     def test_public_https_url_is_safe(self):

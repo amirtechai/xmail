@@ -10,8 +10,11 @@ from tests.conftest import make_user
 
 # ── /api/auth/login ───────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
-async def test_login_success(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result):
+async def test_login_success(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result
+):
     user = make_user(password="ValidP@ss1!")
     user.password_hash = hash_password("ValidP@ss1!")
     mock_session.execute.return_value = make_scalar_result(user)
@@ -49,7 +52,9 @@ def _make_redis_mock(locked: bool = False) -> AsyncMock:
 
 
 @pytest.mark.asyncio
-async def test_login_wrong_password(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result):
+async def test_login_wrong_password(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result
+):
     user = make_user(password="CorrectPass1!")
     user.password_hash = hash_password("CorrectPass1!")
     mock_session.execute.return_value = make_scalar_result(user)
@@ -64,7 +69,9 @@ async def test_login_wrong_password(async_client: AsyncClient, mock_session: Asy
 
 
 @pytest.mark.asyncio
-async def test_login_nonexistent_user(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result):
+async def test_login_nonexistent_user(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result
+):
     mock_session.execute.return_value = make_scalar_result(None)
 
     with patch("app.api.routes.auth._get_redis", return_value=_make_redis_mock()):
@@ -77,7 +84,9 @@ async def test_login_nonexistent_user(async_client: AsyncClient, mock_session: A
 
 
 @pytest.mark.asyncio
-async def test_login_locked_account(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result):
+async def test_login_locked_account(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result
+):
     user = make_user()
     mock_session.execute.return_value = make_scalar_result(user)
 
@@ -95,7 +104,9 @@ async def test_login_locked_account(async_client: AsyncClient, mock_session: Asy
 
 
 @pytest.mark.asyncio
-async def test_login_requires_totp(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result):
+async def test_login_requires_totp(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result
+):
     user = make_user(password="ValidP@ss1!", totp_enabled=True)
     user.password_hash = hash_password("ValidP@ss1!")
     mock_session.execute.return_value = make_scalar_result(user)
@@ -115,8 +126,11 @@ async def test_login_requires_totp(async_client: AsyncClient, mock_session: Asyn
 
 # ── /api/auth/me ──────────────────────────────────────────────────────────────
 
+
 @pytest.mark.asyncio
-async def test_me_returns_user(async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result, test_user):
+async def test_me_returns_user(
+    async_client: AsyncClient, mock_session: AsyncMock, make_scalar_result, test_user
+):
     mock_session.execute.return_value = make_scalar_result(test_user)
     token = create_access_token(str(test_user.id))
 

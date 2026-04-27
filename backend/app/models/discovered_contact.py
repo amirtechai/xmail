@@ -24,9 +24,7 @@ class VerifiedStatus(str, Enum):
 class DiscoveredContact(Base):
     __tablename__ = "discovered_contacts"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     # SHA256 of normalised email for fast dedup lookups
     email_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)

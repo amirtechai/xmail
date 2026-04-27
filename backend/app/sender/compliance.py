@@ -43,7 +43,8 @@ def inject_compliance_footer(
     pixel = (
         f'<img src="{settings.tracking_base_url}/o/{sent_email_id}.gif"'
         ' width="1" height="1" alt="" style="display:none;" />'
-        if sent_email_id else ""
+        if sent_email_id
+        else ""
     )
     footer_html = _HTML_FOOTER_TEMPLATE.format(
         company_address=settings.company_physical_address,

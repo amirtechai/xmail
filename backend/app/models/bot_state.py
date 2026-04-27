@@ -22,9 +22,7 @@ class BotState(Base):
     __tablename__ = "bot_state"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
-    state: Mapped[str] = mapped_column(
-        String(30), default=BotStateEnum.IDLE.value, nullable=False
-    )
+    state: Mapped[str] = mapped_column(String(30), default=BotStateEnum.IDLE.value, nullable=False)
     is_running: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     current_campaign_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     last_activity_at: Mapped[str | None] = mapped_column(DateTime, nullable=True)

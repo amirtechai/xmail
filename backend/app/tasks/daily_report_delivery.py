@@ -15,8 +15,7 @@ logger = get_logger(__name__)
 @celery_app.task(name="app.tasks.daily_report_delivery.deliver_daily_report", bind=True)
 def deliver_daily_report(self, report_date_iso: str | None = None) -> dict:  # type: ignore[override]
     target_date = (
-        date.fromisoformat(report_date_iso) if report_date_iso
-        else datetime.now(UTC).date()
+        date.fromisoformat(report_date_iso) if report_date_iso else datetime.now(UTC).date()
     )
     return asyncio.get_event_loop().run_until_complete(_deliver(target_date))
 
@@ -64,9 +63,10 @@ async def _deliver(report_date: date) -> dict:
 
     async with async_session_factory() as session:
         contacts_result = await session.execute(
-            select(DiscoveredContact).where(
-                func.date(DiscoveredContact.discovered_at) == report_date
-            ).order_by(DiscoveredContact.confidence_score.desc()).limit(50)
+            select(DiscoveredContact)
+            .where(func.date(DiscoveredContact.discovered_at) == report_date)
+            .order_by(DiscoveredContact.confidence_score.desc())
+            .limit(50)
         )
         contacts = [
             {
@@ -99,12 +99,10 @@ async def _deliver(report_date: date) -> dict:
         return {"skipped": True, "reason": "no_smtp_config"}
 
     open_rate = (
-        round(report.emails_opened / report.emails_sent * 100, 1)
-        if report.emails_sent else 0.0
+        round(report.emails_opened / report.emails_sent * 100, 1) if report.emails_sent else 0.0
     )
     click_rate = (
-        round(report.emails_clicked / report.emails_sent * 100, 1)
-        if report.emails_sent else 0.0
+        round(report.emails_clicked / report.emails_sent * 100, 1) if report.emails_sent else 0.0
     )
 
     html_body = f"""

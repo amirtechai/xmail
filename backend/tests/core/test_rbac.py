@@ -22,6 +22,7 @@ def _make_user(role: str, is_active: bool = True) -> User:
 
 # ── require_admin ─────────────────────────────────────────────────────────────
 
+
 class TestRequireAdmin:
     @pytest.mark.asyncio
     async def test_admin_passes(self):
@@ -59,6 +60,7 @@ class TestRequireAdmin:
 
 
 # ── require_operator ──────────────────────────────────────────────────────────
+
 
 class TestRequireOperator:
     @pytest.mark.asyncio

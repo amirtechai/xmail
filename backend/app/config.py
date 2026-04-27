@@ -70,9 +70,9 @@ class Settings(BaseSettings):
     playwright_headless: bool = Field(default=True)
 
     # Webhook signing secrets (leave blank to skip signature verification — dev only)
-    sendgrid_webhook_public_key: str = Field(default="")   # PEM string from SendGrid dashboard
-    postmark_webhook_token: str = Field(default="")        # Shared secret set in Postmark UI
-    mailgun_webhook_signing_key: str = Field(default="")   # Mailgun HTTP webhook signing key
+    sendgrid_webhook_public_key: str = Field(default="")  # PEM string from SendGrid dashboard
+    postmark_webhook_token: str = Field(default="")  # Shared secret set in Postmark UI
+    mailgun_webhook_signing_key: str = Field(default="")  # Mailgun HTTP webhook signing key
 
     # Observability
     sentry_dsn: str = Field(default="")

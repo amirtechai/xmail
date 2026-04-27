@@ -64,9 +64,7 @@ def _serialize(c: Campaign) -> dict:
 
 @router.get("/")
 async def list_campaigns(session: SessionDep, _: CurrentUser) -> list:
-    result = await session.execute(
-        select(Campaign).order_by(Campaign.created_at.desc()).limit(100)
-    )
+    result = await session.execute(select(Campaign).order_by(Campaign.created_at.desc()).limit(100))
     return [_serialize(c) for c in result.scalars().all()]
 
 
@@ -127,14 +125,16 @@ async def update_campaign(
         )
 
     meta = c.attachments_metadata or {}
-    meta.update({
-        "email_subject_b": body.email_subject_b,
-        "scheduled_at": body.scheduled_at.isoformat() if body.scheduled_at else None,
-        "batch_size_per_hour": body.batch_size_per_hour,
-        "dry_run": body.dry_run,
-        "min_confidence": body.min_confidence,
-        "target_countries": body.target_countries,
-    })
+    meta.update(
+        {
+            "email_subject_b": body.email_subject_b,
+            "scheduled_at": body.scheduled_at.isoformat() if body.scheduled_at else None,
+            "batch_size_per_hour": body.batch_size_per_hour,
+            "dry_run": body.dry_run,
+            "min_confidence": body.min_confidence,
+            "target_countries": body.target_countries,
+        }
+    )
     c.name = body.name
     c.description = body.description
     c.target_audience_type_ids = body.target_audience_keys
@@ -177,6 +177,7 @@ async def send_campaign(
     await session.commit()
 
     from app.tasks.campaign_runner import send_campaign
+
     send_campaign.delay(str(campaign_id))
     return {"status": "queued", "campaign_id": str(campaign_id)}
 
@@ -274,9 +275,7 @@ async def test_send(
     )
     smtp = smtp_result.scalar_one_or_none()
     if not smtp:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="SMTP config not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="SMTP config not found")
 
     subject = body.subject_override or c.email_subject
     html_with_footer, text_with_footer = inject_footer(
@@ -299,9 +298,7 @@ async def ai_draft(body: AIDraftRequest, session: SessionDep, _: OperatorUser) -
     # Get LLM config
     if body.llm_config_id:
         llm_result = await session.execute(
-            select(LLMConfiguration).where(
-                LLMConfiguration.id == uuid.UUID(body.llm_config_id)
-            )
+            select(LLMConfiguration).where(LLMConfiguration.id == uuid.UUID(body.llm_config_id))
         )
     else:
         llm_result = await session.execute(
@@ -364,6 +361,7 @@ async def ai_draft(body: AIDraftRequest, session: SessionDep, _: OperatorUser) -
 
 # ── Analytics ────────────────────────────────────────────────────────────────
 
+
 @router.get("/{campaign_id}/stats")
 async def campaign_stats(
     campaign_id: uuid.UUID,
@@ -384,31 +382,43 @@ async def campaign_stats(
     counts: dict[str, int] = {row.status: row.cnt for row in status_counts_result}
 
     total = sum(counts.values())
-    sent = sum(counts.get(s, 0) for s in (
-        SentEmailStatus.SENT.value,
-        SentEmailStatus.DELIVERED.value,
-        SentEmailStatus.OPENED.value,
-        SentEmailStatus.CLICKED.value,
-        SentEmailStatus.REPLIED.value,
-        SentEmailStatus.UNSUBSCRIBED.value,
-        SentEmailStatus.BOUNCED.value,
-    ))
-    delivered = sum(counts.get(s, 0) for s in (
-        SentEmailStatus.DELIVERED.value,
-        SentEmailStatus.OPENED.value,
-        SentEmailStatus.CLICKED.value,
-        SentEmailStatus.REPLIED.value,
-        SentEmailStatus.UNSUBSCRIBED.value,
-    ))
-    opened = sum(counts.get(s, 0) for s in (
-        SentEmailStatus.OPENED.value,
-        SentEmailStatus.CLICKED.value,
-        SentEmailStatus.REPLIED.value,
-    ))
-    clicked = sum(counts.get(s, 0) for s in (
-        SentEmailStatus.CLICKED.value,
-        SentEmailStatus.REPLIED.value,
-    ))
+    sent = sum(
+        counts.get(s, 0)
+        for s in (
+            SentEmailStatus.SENT.value,
+            SentEmailStatus.DELIVERED.value,
+            SentEmailStatus.OPENED.value,
+            SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+            SentEmailStatus.UNSUBSCRIBED.value,
+            SentEmailStatus.BOUNCED.value,
+        )
+    )
+    delivered = sum(
+        counts.get(s, 0)
+        for s in (
+            SentEmailStatus.DELIVERED.value,
+            SentEmailStatus.OPENED.value,
+            SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+            SentEmailStatus.UNSUBSCRIBED.value,
+        )
+    )
+    opened = sum(
+        counts.get(s, 0)
+        for s in (
+            SentEmailStatus.OPENED.value,
+            SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+        )
+    )
+    clicked = sum(
+        counts.get(s, 0)
+        for s in (
+            SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+        )
+    )
     replied = counts.get(SentEmailStatus.REPLIED.value, 0)
     bounced = counts.get(SentEmailStatus.BOUNCED.value, 0)
     unsubscribed = counts.get(SentEmailStatus.UNSUBSCRIBED.value, 0)
@@ -424,7 +434,9 @@ async def campaign_stats(
 
     alerts = []
     if bounce_rate > 2.0:
-        alerts.append({"type": "bounce", "message": f"Bounce rate {bounce_rate}% exceeds 2% threshold"})
+        alerts.append(
+            {"type": "bounce", "message": f"Bounce rate {bounce_rate}% exceeds 2% threshold"}
+        )
     if unsub_rate > 0.5:
         alerts.append({"type": "unsub", "message": f"Unsubscribe rate {unsub_rate}% is high"})
 
@@ -519,54 +531,79 @@ async def campaign_stats_overview(
             .group_by(SentEmail.status)
         )
         counts: dict[str, int] = {row.status: row.cnt for row in sc}
-        sent = sum(counts.get(s, 0) for s in (
-            SentEmailStatus.SENT.value, SentEmailStatus.DELIVERED.value,
-            SentEmailStatus.OPENED.value, SentEmailStatus.CLICKED.value,
-            SentEmailStatus.REPLIED.value, SentEmailStatus.UNSUBSCRIBED.value,
-            SentEmailStatus.BOUNCED.value,
-        ))
-        delivered = sum(counts.get(s, 0) for s in (
-            SentEmailStatus.DELIVERED.value, SentEmailStatus.OPENED.value,
-            SentEmailStatus.CLICKED.value, SentEmailStatus.REPLIED.value,
-            SentEmailStatus.UNSUBSCRIBED.value,
-        ))
-        opened = sum(counts.get(s, 0) for s in (
-            SentEmailStatus.OPENED.value, SentEmailStatus.CLICKED.value,
-            SentEmailStatus.REPLIED.value,
-        ))
-        clicked = sum(counts.get(s, 0) for s in (
-            SentEmailStatus.CLICKED.value, SentEmailStatus.REPLIED.value,
-        ))
+        sent = sum(
+            counts.get(s, 0)
+            for s in (
+                SentEmailStatus.SENT.value,
+                SentEmailStatus.DELIVERED.value,
+                SentEmailStatus.OPENED.value,
+                SentEmailStatus.CLICKED.value,
+                SentEmailStatus.REPLIED.value,
+                SentEmailStatus.UNSUBSCRIBED.value,
+                SentEmailStatus.BOUNCED.value,
+            )
+        )
+        delivered = sum(
+            counts.get(s, 0)
+            for s in (
+                SentEmailStatus.DELIVERED.value,
+                SentEmailStatus.OPENED.value,
+                SentEmailStatus.CLICKED.value,
+                SentEmailStatus.REPLIED.value,
+                SentEmailStatus.UNSUBSCRIBED.value,
+            )
+        )
+        opened = sum(
+            counts.get(s, 0)
+            for s in (
+                SentEmailStatus.OPENED.value,
+                SentEmailStatus.CLICKED.value,
+                SentEmailStatus.REPLIED.value,
+            )
+        )
+        clicked = sum(
+            counts.get(s, 0)
+            for s in (
+                SentEmailStatus.CLICKED.value,
+                SentEmailStatus.REPLIED.value,
+            )
+        )
         bounced = counts.get(SentEmailStatus.BOUNCED.value, 0)
 
         def _r(n: int, d: int) -> float:
             return round(n / d * 100, 2) if d else 0.0
 
         meta = c.attachments_metadata or {}
-        campaign_rows.append({
-            "id": str(c.id),
-            "name": c.name,
-            "status": c.status,
-            "sent": sent,
-            "delivered": delivered,
-            "opened": opened,
-            "clicked": clicked,
-            "bounced": bounced,
-            "open_rate": _r(opened, delivered),
-            "click_rate": _r(clicked, opened),
-            "bounce_rate": _r(bounced, sent),
-            "ab_enabled": bool(meta.get("email_subject_b")),
-            "created_at": c.created_at.isoformat(),
-        })
+        campaign_rows.append(
+            {
+                "id": str(c.id),
+                "name": c.name,
+                "status": c.status,
+                "sent": sent,
+                "delivered": delivered,
+                "opened": opened,
+                "clicked": clicked,
+                "bounced": bounced,
+                "open_rate": _r(opened, delivered),
+                "click_rate": _r(clicked, opened),
+                "bounce_rate": _r(bounced, sent),
+                "ab_enabled": bool(meta.get("email_subject_b")),
+                "created_at": c.created_at.isoformat(),
+            }
+        )
 
     # Daily trend from DailyReport
     trend_rows = (
-        await session.execute(
-            select(DailyReport)
-            .where(DailyReport.report_date >= since)
-            .order_by(DailyReport.report_date.asc())
+        (
+            await session.execute(
+                select(DailyReport)
+                .where(DailyReport.report_date >= since)
+                .order_by(DailyReport.report_date.asc())
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     trend = []
     for r in trend_rows:
@@ -574,16 +611,18 @@ async def campaign_stats_overview(
         open_rate = round(r.emails_opened / delivered_d * 100, 2) if delivered_d else 0.0
         click_rate = round(r.emails_clicked / r.emails_opened * 100, 2) if r.emails_opened else 0.0
         bounce_rate = round(r.emails_bounced / r.emails_sent * 100, 2) if r.emails_sent else 0.0
-        trend.append({
-            "date": str(r.report_date),
-            "sent": r.emails_sent,
-            "opened": r.emails_opened,
-            "clicked": r.emails_clicked,
-            "bounced": r.emails_bounced,
-            "open_rate": open_rate,
-            "click_rate": click_rate,
-            "bounce_rate": bounce_rate,
-        })
+        trend.append(
+            {
+                "date": str(r.report_date),
+                "sent": r.emails_sent,
+                "opened": r.emails_opened,
+                "clicked": r.emails_clicked,
+                "bounced": r.emails_bounced,
+                "open_rate": open_rate,
+                "click_rate": click_rate,
+                "bounce_rate": bounce_rate,
+            }
+        )
 
     # Aggregate totals
     totals_result = await session.execute(
@@ -624,6 +663,7 @@ async def campaign_stats_overview(
 
 # ── Sequences ─────────────────────────────────────────────────────────────────
 
+
 def _serialize_seq(seq: CampaignSequence, steps: list) -> dict:
     return {
         "id": str(seq.id),
@@ -654,17 +694,29 @@ async def list_sequences(
     session: SessionDep,
     _: CurrentUser,
 ) -> list:
-    seqs = (await session.execute(
-        select(CampaignSequence)
-        .where(CampaignSequence.campaign_id == campaign_id)
-        .order_by(CampaignSequence.created_at)
-    )).scalars().all()
+    seqs = (
+        (
+            await session.execute(
+                select(CampaignSequence)
+                .where(CampaignSequence.campaign_id == campaign_id)
+                .order_by(CampaignSequence.created_at)
+            )
+        )
+        .scalars()
+        .all()
+    )
 
     result = []
     for seq in seqs:
-        steps = (await session.execute(
-            select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq.id)
-        )).scalars().all()
+        steps = (
+            (
+                await session.execute(
+                    select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq.id)
+                )
+            )
+            .scalars()
+            .all()
+        )
         result.append(_serialize_seq(seq, steps))
     return result
 
@@ -701,12 +753,14 @@ async def update_sequence(
     session: SessionDep,
     _: OperatorUser,
 ) -> dict:
-    seq = (await session.execute(
-        select(CampaignSequence).where(
-            CampaignSequence.id == seq_id,
-            CampaignSequence.campaign_id == campaign_id,
+    seq = (
+        await session.execute(
+            select(CampaignSequence).where(
+                CampaignSequence.id == seq_id,
+                CampaignSequence.campaign_id == campaign_id,
+            )
         )
-    )).scalar_one_or_none()
+    ).scalar_one_or_none()
     if not seq:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sequence not found")
 
@@ -720,9 +774,15 @@ async def update_sequence(
     await session.commit()
     await session.refresh(seq)
 
-    steps = (await session.execute(
-        select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq.id)
-    )).scalars().all()
+    steps = (
+        (
+            await session.execute(
+                select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq.id)
+            )
+        )
+        .scalars()
+        .all()
+    )
     return _serialize_seq(seq, steps)
 
 
@@ -733,21 +793,29 @@ async def delete_sequence(
     session: SessionDep,
     _: OperatorUser,
 ) -> None:
-    seq = (await session.execute(
-        select(CampaignSequence).where(
-            CampaignSequence.id == seq_id,
-            CampaignSequence.campaign_id == campaign_id,
+    seq = (
+        await session.execute(
+            select(CampaignSequence).where(
+                CampaignSequence.id == seq_id,
+                CampaignSequence.campaign_id == campaign_id,
+            )
         )
-    )).scalar_one_or_none()
+    ).scalar_one_or_none()
     if not seq:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sequence not found")
     await session.execute(
         select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq_id)
     )
     # Delete steps first, then sequence
-    steps = (await session.execute(
-        select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq_id)
-    )).scalars().all()
+    steps = (
+        (
+            await session.execute(
+                select(CampaignSequenceStep).where(CampaignSequenceStep.sequence_id == seq_id)
+            )
+        )
+        .scalars()
+        .all()
+    )
     for s in steps:
         await session.delete(s)
     await session.delete(seq)
@@ -762,12 +830,14 @@ async def add_step(
     session: SessionDep,
     _: OperatorUser,
 ) -> dict:
-    seq = (await session.execute(
-        select(CampaignSequence).where(
-            CampaignSequence.id == seq_id,
-            CampaignSequence.campaign_id == campaign_id,
+    seq = (
+        await session.execute(
+            select(CampaignSequence).where(
+                CampaignSequence.id == seq_id,
+                CampaignSequence.campaign_id == campaign_id,
+            )
         )
-    )).scalar_one_or_none()
+    ).scalar_one_or_none()
     if not seq:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sequence not found")
 
@@ -803,12 +873,14 @@ async def update_step(
     session: SessionDep,
     _: OperatorUser,
 ) -> dict:
-    step = (await session.execute(
-        select(CampaignSequenceStep).where(
-            CampaignSequenceStep.id == step_id,
-            CampaignSequenceStep.sequence_id == seq_id,
+    step = (
+        await session.execute(
+            select(CampaignSequenceStep).where(
+                CampaignSequenceStep.id == step_id,
+                CampaignSequenceStep.sequence_id == seq_id,
+            )
         )
-    )).scalar_one_or_none()
+    ).scalar_one_or_none()
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Step not found")
 
@@ -846,12 +918,14 @@ async def delete_step(
     session: SessionDep,
     _: OperatorUser,
 ) -> None:
-    step = (await session.execute(
-        select(CampaignSequenceStep).where(
-            CampaignSequenceStep.id == step_id,
-            CampaignSequenceStep.sequence_id == seq_id,
+    step = (
+        await session.execute(
+            select(CampaignSequenceStep).where(
+                CampaignSequenceStep.id == step_id,
+                CampaignSequenceStep.sequence_id == seq_id,
+            )
         )
-    )).scalar_one_or_none()
+    ).scalar_one_or_none()
     if not step:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Step not found")
     await session.delete(step)
@@ -873,20 +947,25 @@ async def campaign_recipients(
 
     total = (await session.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
     rows = (
-        await session.execute(
-            q.order_by(SentEmail.sent_at.desc().nulls_last())
-            .offset((page - 1) * page_size)
-            .limit(page_size)
+        (
+            await session.execute(
+                q.order_by(SentEmail.sent_at.desc().nulls_last())
+                .offset((page - 1) * page_size)
+                .limit(page_size)
+            )
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
 
     # Enrich with contact email via contact_id
     contact_emails: dict[str, str] = {}
     contact_ids = [r.contact_id for r in rows if r.contact_id]
     if contact_ids:
         contacts_result = await session.execute(
-            select(DiscoveredContact.id, DiscoveredContact.email, DiscoveredContact.full_name)
-            .where(DiscoveredContact.id.in_(contact_ids))
+            select(
+                DiscoveredContact.id, DiscoveredContact.email, DiscoveredContact.full_name
+            ).where(DiscoveredContact.id.in_(contact_ids))
         )
         for row in contacts_result:
             contact_emails[str(row.id)] = f"{row.full_name or ''} <{row.email}>"
@@ -899,7 +978,9 @@ async def campaign_recipients(
             "subject": r.subject,
             "status": r.status,
             "sent_at": r.sent_at.isoformat() if r.sent_at else None,
-            "opened_at": r.tracking_pixel_opened_at.isoformat() if r.tracking_pixel_opened_at else None,
+            "opened_at": r.tracking_pixel_opened_at.isoformat()
+            if r.tracking_pixel_opened_at
+            else None,
             "bounce_reason": r.bounce_reason,
             "click_count": len(r.click_events or []),
         }

@@ -28,7 +28,9 @@ async def _db_contains(email: str, session) -> bool:  # type: ignore[no-untyped-
     from app.models.suppression_list import SuppressionList
 
     # Check suppression list first (hard block)
-    suppressed = await session.execute(select(SuppressionList).where(SuppressionList.email == email))
+    suppressed = await session.execute(
+        select(SuppressionList).where(SuppressionList.email == email)
+    )
     if suppressed.scalar_one_or_none():
         return True
 

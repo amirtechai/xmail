@@ -12,6 +12,7 @@ from app.models.daily_report import DailyReport
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
+
 def _make_report(
     report_date: date | None = None,
     emails_sent: int = 100,
@@ -70,6 +71,7 @@ def _fake_path(exists: bool = True) -> MagicMock:
 
 # ── tests ─────────────────────────────────────────────────────────────────────
 
+
 class TestDeliverDailyReport:
     @pytest.mark.asyncio
     async def test_skips_when_no_admin_email_configured(self) -> None:
@@ -106,7 +108,9 @@ class TestDeliverDailyReport:
             call_count += 1
             if call_count == 1:
                 return _scalar_one(report)
-            r = MagicMock(); r.fetchall.return_value = []; return r
+            r = MagicMock()
+            r.fetchall.return_value = []
+            return r
 
         _, factory = _make_session_factory(_exec)
 
@@ -132,9 +136,13 @@ class TestDeliverDailyReport:
             if call_count == 1:
                 return _scalar_one(report)
             if call_count == 2:
-                r = MagicMock(); r.fetchall.return_value = [("admin@x.com",)]; return r
+                r = MagicMock()
+                r.fetchall.return_value = [("admin@x.com",)]
+                return r
             if call_count == 3:
-                r = MagicMock(); r.scalars.return_value = iter([]); return r
+                r = MagicMock()
+                r.scalars.return_value = iter([])
+                return r
             return _scalar_one(_make_smtp())
 
         _, factory = _make_session_factory(_exec)
@@ -152,8 +160,8 @@ class TestDeliverDailyReport:
 
         assert "admin@x.com" in result["delivered_to"]
         html_body = smtp_client.send.call_args.kwargs.get("html_body", "")
-        assert "25.0%" in html_body   # open rate
-        assert "10.0%" in html_body   # click rate
+        assert "25.0%" in html_body  # open rate
+        assert "10.0%" in html_body  # click rate
 
     @pytest.mark.asyncio
     async def test_per_recipient_failure_does_not_abort(self) -> None:
@@ -173,7 +181,9 @@ class TestDeliverDailyReport:
                 r.fetchall.return_value = [("admin1@x.com",), ("admin2@x.com",)]
                 return r
             if call_count == 3:
-                r = MagicMock(); r.scalars.return_value = iter([]); return r
+                r = MagicMock()
+                r.scalars.return_value = iter([])
+                return r
             return _scalar_one(_make_smtp())
 
         _, factory = _make_session_factory(_exec)
@@ -212,9 +222,13 @@ class TestDeliverDailyReport:
             if call_count == 1:
                 return _scalar_one(report)
             if call_count == 2:
-                r = MagicMock(); r.fetchall.return_value = [("admin@x.com",)]; return r
+                r = MagicMock()
+                r.fetchall.return_value = [("admin@x.com",)]
+                return r
             if call_count == 3:
-                r = MagicMock(); r.scalars.return_value = iter([]); return r
+                r = MagicMock()
+                r.scalars.return_value = iter([])
+                return r
             return _scalar_one(_make_smtp())
 
         _, factory = _make_session_factory(_exec)
