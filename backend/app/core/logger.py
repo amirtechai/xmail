@@ -51,3 +51,7 @@ def configure_logging() -> None:
 
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     return structlog.get_logger(name)
+
+
+# Configure at import time so module-level loggers cache the right processors.
+configure_logging()
