@@ -42,7 +42,7 @@ def _dispatch(provider: str, event_type: str, email: str, message_id: str, ts: s
 
 def _utc_iso(ts: Any) -> str:
     """Convert Unix timestamp or ISO string to UTC ISO-8601 string."""
-    if isinstance(ts, (int, float)):
+    if isinstance(ts, int | float):
         return datetime.fromtimestamp(ts, tz=UTC).isoformat()
     return str(ts)
 

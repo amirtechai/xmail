@@ -73,7 +73,7 @@ _XSD_SCHEMA: etree.XMLSchema | None = None
 def _get_schema() -> etree.XMLSchema:
     global _XSD_SCHEMA
     if _XSD_SCHEMA is None:
-        _XSD_SCHEMA = etree.XMLSchema(etree.fromstring(_XSD_SOURCE))
+        _XSD_SCHEMA = etree.XMLSchema(etree.fromstring(_XSD_SOURCE))  # noqa: S320
     return _XSD_SCHEMA
 
 
