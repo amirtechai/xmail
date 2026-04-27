@@ -16,6 +16,7 @@ _HTML_FOOTER_TEMPLATE = """
     </td>
   </tr>
 </table>
+{pixel}
 """
 
 _TEXT_FOOTER_TEMPLATE = """
@@ -36,11 +37,18 @@ def inject_compliance_footer(
     html_body: str,
     text_body: str,
     unsubscribe_token: str,
+    sent_email_id: str | None = None,
 ) -> tuple[str, str]:
     url = build_unsubscribe_url(unsubscribe_token)
+    pixel = (
+        f'<img src="{settings.tracking_base_url}/o/{sent_email_id}.gif"'
+        ' width="1" height="1" alt="" style="display:none;" />'
+        if sent_email_id else ""
+    )
     footer_html = _HTML_FOOTER_TEMPLATE.format(
         company_address=settings.company_physical_address,
         unsubscribe_url=url,
+        pixel=pixel,
     )
     footer_text = _TEXT_FOOTER_TEMPLATE.format(
         company_address=settings.company_physical_address,

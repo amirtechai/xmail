@@ -84,14 +84,85 @@ async def _deliver(report_date: date) -> dict:
     if not xml_out.exists():
         xml_exporter.generate_xml(report=report, contacts=contacts, output_path=xml_out)
 
+    # Load first active SMTP config to send the digest
+    from app.models.smtp_config import SMTPConfiguration
+    from app.sender.smtp_client import SMTPClient
+
+    async with async_session_factory() as session:
+        smtp_result = await session.execute(select(SMTPConfiguration).limit(1))
+        smtp = smtp_result.scalar_one_or_none()
+
+    if not smtp:
+        logger.warning("report_delivery_skipped", reason="no_smtp_config")
+        return {"skipped": True, "reason": "no_smtp_config"}
+
+    open_rate = (
+        round(report.emails_opened / report.emails_sent * 100, 1)
+        if report.emails_sent else 0.0
+    )
+    click_rate = (
+        round(report.emails_clicked / report.emails_sent * 100, 1)
+        if report.emails_sent else 0.0
+    )
+
+    html_body = f"""
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+background:#0f0f0f;color:#d4d4d4;padding:2rem;margin:0;">
+<div style="max-width:560px;margin:0 auto;background:#1a1a1a;border:1px solid #2a2a2a;
+border-radius:8px;padding:2rem;">
+  <h2 style="color:#e5e5e5;margin:0 0 0.25rem;">Daily Report</h2>
+  <p style="color:#666;margin:0 0 1.5rem;font-size:0.875rem;">{report_date.isoformat()}</p>
+  <table style="width:100%;border-collapse:collapse;">
+    <tr><td style="padding:0.5rem 0;color:#888;font-size:0.875rem;">Contacts Discovered</td>
+        <td style="padding:0.5rem 0;text-align:right;color:#e5e5e5;font-weight:600;">{report.contacts_discovered}</td></tr>
+    <tr><td style="padding:0.5rem 0;color:#888;font-size:0.875rem;border-top:1px solid #2a2a2a;">Emails Sent</td>
+        <td style="padding:0.5rem 0;text-align:right;color:#e5e5e5;font-weight:600;border-top:1px solid #2a2a2a;">{report.emails_sent}</td></tr>
+    <tr><td style="padding:0.5rem 0;color:#888;font-size:0.875rem;">Emails Bounced</td>
+        <td style="padding:0.5rem 0;text-align:right;color:#ef4444;font-weight:600;">{report.emails_bounced}</td></tr>
+    <tr><td style="padding:0.5rem 0;color:#888;font-size:0.875rem;">Open Rate</td>
+        <td style="padding:0.5rem 0;text-align:right;color:#4ade80;font-weight:600;">{open_rate}%</td></tr>
+    <tr><td style="padding:0.5rem 0;color:#888;font-size:0.875rem;">Click Rate</td>
+        <td style="padding:0.5rem 0;text-align:right;color:#60a5fa;font-weight:600;">{click_rate}%</td></tr>
+  </table>
+</div>
+</body></html>"""
+
+    text_body = (
+        f"Daily Report — {report_date.isoformat()}\n\n"
+        f"Contacts Discovered : {report.contacts_discovered}\n"
+        f"Emails Sent         : {report.emails_sent}\n"
+        f"Emails Bounced      : {report.emails_bounced}\n"
+        f"Open Rate           : {open_rate}%\n"
+        f"Click Rate          : {click_rate}%\n"
+    )
+
+    client = SMTPClient(smtp)
+    sent_to: list[str] = []
+    failed: list[str] = []
+    for email in admin_emails:
+        try:
+            await client.send(
+                to_email=email,
+                subject=f"Xmail Daily Report — {report_date.isoformat()}",
+                html_body=html_body,
+                text_body=text_body,
+                unsubscribe_token="",
+            )
+            sent_to.append(email)
+        except Exception as exc:
+            logger.warning("report_email_failed", recipient=email, error=str(exc))
+            failed.append(email)
+
     logger.info(
         "daily_report_delivered",
         date=report_date.isoformat(),
-        recipients=admin_emails,
+        sent_to=sent_to,
+        failed=failed,
         pdf=str(pdf_out),
     )
     return {
-        "delivered_to": admin_emails,
+        "delivered_to": sent_to,
+        "failed": failed,
         "date": report_date.isoformat(),
         "pdf": str(pdf_out),
         "xml": str(xml_out),

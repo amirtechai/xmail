@@ -111,6 +111,7 @@ async def _send(campaign_id: str) -> dict:
                 body_hash=body_hash,
                 status=SentEmailStatus.QUEUED.value,
                 ab_variant=variant if subject_b else None,
+                recipient_email=contact.email,
             )
             session.add(sent_email)
             await session.flush()
@@ -122,6 +123,7 @@ async def _send(campaign_id: str) -> dict:
                     html_body=interpolate(body_html),
                     text_body=interpolate(body_text),
                     unsubscribe_token=str(sent_email.id),
+                    sent_email_id=str(sent_email.id),
                 )
                 sent_email.status = SentEmailStatus.SENT.value
                 sent_email.message_id = msg_id

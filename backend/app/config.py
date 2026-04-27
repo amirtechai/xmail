@@ -37,6 +37,7 @@ class Settings(BaseSettings):
     smtp_from_email: str = Field(default="outreach@xmail.amirtech.ai")
     company_physical_address: str = Field(default="")
     unsubscribe_base_url: str = Field(default="https://xmail.amirtech.ai/u")
+    tracking_base_url: str = Field(default="https://xmail.amirtech.ai/t")
 
     # Scheduling
     timezone: str = Field(default="Europe/Istanbul")
