@@ -155,6 +155,7 @@ export default function ComposePage() {
   const [scheduledAt, setScheduledAt] = useState('')
   const [scheduleMode, setScheduleMode] = useState<'now' | 'scheduled' | 'batched'>('now')
   const [batchSize, setBatchSize] = useState(30)
+  const [hourlyLimit, setHourlyLimit] = useState(50)
   const [liaReason, setLiaReason] = useState('')
   const [aiContext, setAiContext] = useState('')
   const [aiTone, setAiTone] = useState('professional')
@@ -201,6 +202,7 @@ export default function ComposePage() {
       setScheduleMode('batched')
       setBatchSize(c.batch_size_per_hour)
     }
+    if (c.hourly_limit) setHourlyLimit(c.hourly_limit)
   }
 
   const buildPayload = (): CampaignCreate => ({
@@ -217,6 +219,7 @@ export default function ComposePage() {
     legitimate_interest_reason: liaReason,
     scheduled_at: scheduleMode === 'scheduled' && scheduledAt ? scheduledAt : null,
     batch_size_per_hour: scheduleMode === 'batched' ? batchSize : null,
+    hourly_limit: hourlyLimit,
     dry_run: false,
   })
 
@@ -619,6 +622,20 @@ export default function ComposePage() {
                   </div>
                 </div>
               )}
+
+              <div>
+                <label className="block text-xs text-text-muted mb-1">
+                  Hourly send limit (0 = unlimited, default 50)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={9999}
+                  value={hourlyLimit}
+                  onChange={(e) => setHourlyLimit(Number(e.target.value))}
+                  className="input w-32 text-sm"
+                />
+              </div>
             </div>
           </div>
         )}

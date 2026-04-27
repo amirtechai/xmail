@@ -1,7 +1,7 @@
 """LangGraph shared state definition for the Xmail discovery pipeline."""
 
 from typing import Annotated, Any
-from typing_extensions import TypedDict
+from typing_extensions import NotRequired, TypedDict
 
 from langgraph.graph.message import add_messages
 
@@ -12,6 +12,7 @@ class XmailState(TypedDict):
     audience_type: str
     audience_keywords: list[str]
     target_count: int
+    industry_vertical: NotRequired[str]  # e.g. "finance", "tech", "healthcare"
 
     # Pipeline progress
     search_queries: list[str]

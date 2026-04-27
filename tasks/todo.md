@@ -4,8 +4,8 @@
 
 ## Durum Özeti
 - Başlangıç: 2026-04-22
-- Son güncelleme: 2026-04-24
-- Tamamlanan: 12/12
+- Son güncelleme: 2026-04-27
+- Tamamlanan: 23/26
 
 ---
 
@@ -187,6 +187,200 @@
 2. HMAC signature doğrulama
 3. bounce → suppression; open/click → sent_email güncelle
 4. Celery async işleme
+
+---
+
+---
+
+## M — Open Tracking Pixel [x]
+**Dosyalar:**
+- `backend/app/api/routes/tracking.py` (YENİ)
+- `backend/app/main.py` (router ekle)
+
+**Ne yapılacak:**
+1. `GET /t/o/{sent_email_id}.gif` → 1×1 transparent GIF döndür
+2. İlk açılışta `tracking_pixel_opened_at` set, status → OPENED
+3. İkinci açılışta commit yok (idempotent)
+4. `Cache-Control: no-store` header
+
+---
+
+## N — Unsubscribe Landing Page [x]
+**Dosyalar:**
+- `backend/app/api/routes/unsubscribe.py` (yeniden yaz)
+- `backend/app/models/suppression_list.py` (güncelle)
+
+**Ne yapılacak:**
+1. `GET /u/{token}` → dark-themed HTML confirm page
+2. `POST /u/{token}` → SuppressionList'e ekle, status → UNSUBSCRIBED
+3. Zaten suppressed ise duplicate ekleme
+4. BOUNCED status'u değiştirme
+
+---
+
+## O — Daily Digest Email Delivery [x]
+**Dosyalar:**
+- `backend/app/tasks/daily_report_delivery.py` (güncelle)
+- `backend/app/sender/smtp_client.py` (var)
+
+**Ne yapılacak:**
+1. Günlük raporu hesapla (open/click rate dahil)
+2. Tüm admin kullanıcılara dark-themed HTML digest gönder
+3. SMTPClient ile ilk aktif SMTP konfigürasyonu kullan
+4. Per-recipient hata handling, başarı sayısı döndür
+
+---
+
+## ★ P — Apollo.io Integration [ÖNCELIK] [x]
+**Dosyalar:**
+- `backend/app/scrapers/apollo_client.py` (YENİ)
+- `backend/app/agents/nodes/apollo_lookup.py` (YENİ)
+- `backend/app/agents/graph.py` (güncelle)
+- `backend/app/config.py` (APOLLO_API_KEY)
+
+**Ne yapılacak:**
+1. ApolloClient — `POST /people/search` (industry, title, company filters)
+2. Finance filter presets: hedge fund, private equity, investment banking, asset management
+3. apollo_lookup_node — graph'a hunter'dan önce ekle
+4. Dönen kişileri Contact olarak persist et (email doğrulanmış)
+5. API key yoksa node skip
+
+---
+
+## ★ Q — Finance-Specific Data Sources [x]
+**Dosyalar:**
+- `backend/app/scrapers/sec_edgar_client.py` (YENİ)
+- `backend/app/scrapers/finance_directories.py` (YENİ)
+- `backend/app/tasks/finance_source_seeder.py` (YENİ)
+
+**Ne yapılacak:**
+1. SEC EDGAR company filings → contact name extraction
+2. CFA Institute member directory scraper
+3. Financial association directories (SIFMA, AIMA, MFA)
+4. ScrapingSource'a pre-seed finance URLs
+5. Domain list: gs.com, jpmchase.com, blackrock.com, vanguard.com, fidelity.com, citadel.com vb.
+
+---
+
+## ★ R — Finance-Targeted Planner Prompts [x]
+**Dosyalar:**
+- `backend/app/agents/nodes/planner.py` (güncelle)
+- `backend/app/agents/state.py` (industry_vertical field)
+
+**Ne yapılacak:**
+1. `industry_vertical = "finance"` → özel prompt template
+2. Finance-specific arama terimleri: "hedge fund manager email", "CFO investment bank contact"
+3. Target titles: CFA, CFO, Portfolio Manager, Managing Director, VP Finance
+4. Target firms: büyük bankalar, hedge fund'lar, PE firmaları, asset manager'lar
+5. SerpAPI sorgularına site: filtresi ekle (linkedin.com/in, bloomberg.com)
+
+---
+
+## ★ S — Domain Bulk Email Generation [x]
+**Dosyalar:**
+- `backend/app/tasks/domain_bulk_targeting.py` (YENİ)
+- `backend/app/scrapers/hunter_client.py` (domain_search bulk)
+- `backend/app/agents/nodes/infer_email_pattern.py` (güncelle)
+
+**Ne yapılacak:**
+1. Finance firm domain listesi tanımla (config veya DB'de)
+2. Hunter domain_search → tüm bilinen email'leri çek
+3. infer_email_pattern ile `{first}.{last}@domain` üret
+4. Validate + score → persist
+5. Günlük Celery beat task
+
+---
+
+## T — People Data Labs (PDL) Integration [x]
+**Dosyalar:**
+- `backend/app/scrapers/pdl_client.py` (YENİ)
+- `backend/app/agents/nodes/pdl_enrich.py` (YENİ)
+- `backend/app/agents/graph.py` (güncelle)
+- `backend/app/config.py` (PDL_API_KEY)
+
+**Ne yapılacak:**
+1. PDLClient — `POST /person/enrich` (email veya name+company ile)
+2. pdl_enrich_node — proxycurl ile paralel, score>50 contact'lara
+3. Education, skills, previous companies verisi ekle
+4. API key yoksa skip
+
+---
+
+## U — Click Tracking Redirect [x]
+**Dosyalar:**
+- `backend/app/api/routes/tracking.py` (güncelle)
+
+**Ne yapılacak:**
+1. `GET /t/c/{sent_email_id}?url=...` → redirect
+2. `clicked_at` timestamp set, status → CLICKED
+3. URL whitelist / validation (open redirect engelle)
+4. Fallback: URL yoksa 404
+
+---
+
+## V — Suppression List Management UI [x]
+**Dosyalar:**
+- `frontend/src/pages/SuppressionListPage.tsx` (YENİ)
+- `backend/app/api/routes/suppression.py` (YENİ)
+
+**Ne yapılacak:**
+1. `GET/DELETE /api/suppression` — liste + silme
+2. Frontend tablo: email, reason, suppressed_at
+3. Manuel ekle / CSV import
+4. Kampanya gönderimi öncesi suppression check görünürlüğü
+
+---
+
+## W — Campaign Stats Dashboard [x]
+**Dosyalar:**
+- `frontend/src/pages/CampaignStatsPage.tsx` (YENİ)
+- `backend/app/api/routes/campaigns.py` (stats endpoint güncelle)
+
+**Ne yapılacak:**
+1. Open rate, click rate, bounce rate zaman serisi chart
+2. A/B variant karşılaştırma bar chart
+3. Top performing campaigns tablosu
+4. Recharts veya Chart.js
+
+---
+
+## X — IMAP Reply Detection [x]
+**Dosyalar:**
+- `backend/app/tasks/imap_reply_checker.py` (YENİ)
+- `backend/app/models/sent_email.py` (replied_at field)
+
+**Ne yapılacak:**
+1. IMAP IDLE veya poll — gelen inbox izle
+2. In-Reply-To header match → sent_email.replied_at set
+3. Sequence'ı durdur (stop condition)
+4. Günlük Celery beat task
+
+---
+
+## Y — Rate Limiting Per Campaign [x]
+**Dosyalar:**
+- `backend/app/models/campaign.py` (hourly_limit field)
+- `backend/app/tasks/campaign_runner.py` (güncelle)
+
+**Ne yapılacak:**
+1. Campaign'e `hourly_limit` (varsayılan: 50)
+2. Runner: son 1 saatte gönderilen sayıyı hesapla
+3. Limit aşıldıysa task'ı `countdown=3600` ile retry
+4. Admin UI: campaign edit'e limit field
+
+---
+
+## Z — Test Suite Gaps [x]
+**Dosyalar:**
+- `backend/tests/tasks/test_campaign_runner.py` (YENİ)
+- `backend/tests/tasks/test_daily_report.py` (YENİ)
+- `backend/tests/sender/test_compliance.py` (YENİ)
+
+**Ne yapılacak:**
+1. campaign_runner: send loop, suppression check, bounce handling
+2. daily_report_delivery: open/click rate calc, SMTP send mock
+3. compliance: footer injection, unsubscribe link validation
+4. Her test dosyası en az 5 test case
 
 ---
 

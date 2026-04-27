@@ -15,6 +15,7 @@ import ComposePage from './pages/ComposePage'
 import LogsPage from './pages/LogsPage'
 import SettingsPage from './pages/SettingsPage'
 import UsersPage from './pages/UsersPage'
+import CampaignStatsPage from './pages/CampaignStatsPage'
 
 function RequireAuth({ children }: { children: ReactNode }) {
   const user = useAuth((s) => s.user)
@@ -51,6 +52,7 @@ export default function App() {
           <Route path="/contacts" element={<ContactsPage />} />
           <Route path="/campaigns" element={<CampaignsPage />} />
           <Route path="/campaigns/:id" element={<CampaignDetailPage />} />
+          <Route path="/campaign-stats" element={<CampaignStatsPage />} />
           <Route path="/compose" element={<ComposePage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/suppression" element={<SuppressionPage />} />

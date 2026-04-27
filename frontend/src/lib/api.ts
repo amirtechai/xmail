@@ -312,6 +312,7 @@ export interface Campaign {
   legitimate_interest_reason: string
   scheduled_at: string | null
   batch_size_per_hour: number | null
+  hourly_limit: number
   dry_run: boolean
   created_at: string
 }
@@ -331,6 +332,7 @@ export interface CampaignCreate {
   legitimate_interest_reason?: string
   scheduled_at?: string | null
   batch_size_per_hour?: number | null
+  hourly_limit?: number
   dry_run?: boolean
 }
 
@@ -375,6 +377,49 @@ export interface CampaignStats {
   alerts: CampaignAlert[]
   ab_results: ABResults | null
   created_at: string
+}
+
+export interface CampaignStatRow {
+  id: string
+  name: string
+  status: string
+  sent: number
+  delivered: number
+  opened: number
+  clicked: number
+  bounced: number
+  open_rate: number
+  click_rate: number
+  bounce_rate: number
+  ab_enabled: boolean
+  created_at: string
+}
+
+export interface StatsTrendPoint {
+  date: string
+  sent: number
+  opened: number
+  clicked: number
+  bounced: number
+  open_rate: number
+  click_rate: number
+  bounce_rate: number
+}
+
+export interface CampaignStatsOverview {
+  period_days: number
+  totals: {
+    sent: number
+    delivered: number
+    opened: number
+    clicked: number
+    bounced: number
+    open_rate: number
+    click_rate: number
+    bounce_rate: number
+  }
+  trend: StatsTrendPoint[]
+  campaigns: CampaignStatRow[]
 }
 
 export interface RecipientRow {
@@ -643,6 +688,7 @@ export const campaignsApi = {
     llm_config_id?: string | null
   }) => api.post<AIDraftResponse>('/campaigns/ai-draft', payload),
   stats: (id: string) => api.get<CampaignStats>(`/campaigns/${id}/stats`),
+  statsOverview: (days = 30) => api.get<CampaignStatsOverview>('/campaigns/stats-overview', { params: { days } }),
   recipients: (id: string, page = 1, pageSize = 50, statusFilter?: string) =>
     api.get<PagedResponse<RecipientRow>>(`/campaigns/${id}/recipients`, {
       params: { page, page_size: pageSize, status: statusFilter || undefined },

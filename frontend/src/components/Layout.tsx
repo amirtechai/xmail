@@ -12,6 +12,7 @@ import {
   Megaphone,
   ScrollText,
   UserCog,
+  BarChart2,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 import { botApi, type BotStatus } from '../lib/api'
@@ -23,7 +24,8 @@ type NavRole = 'all' | 'operator' | 'admin'
 const NAV: { to: string; icon: React.FC<{ className?: string }>; label: string; key: string; minRole: NavRole }[] = [
   { to: '/dashboard',   icon: LayoutDashboard, label: 'Dashboard',   key: 'DASH', minRole: 'all'      },
   { to: '/bot',         icon: Bot,             label: 'Bot Control', key: 'BOT',  minRole: 'operator' },
-  { to: '/campaigns',   icon: Megaphone,       label: 'Campaigns',   key: 'CAMP', minRole: 'all'      },
+  { to: '/campaigns',      icon: Megaphone,   label: 'Campaigns',     key: 'CAMP', minRole: 'all'      },
+  { to: '/campaign-stats', icon: BarChart2,   label: 'Stats',         key: 'STAT', minRole: 'all'      },
   { to: '/compose',     icon: PenLine,         label: 'Compose',     key: 'COMP', minRole: 'operator' },
   { to: '/contacts',    icon: Users,           label: 'Contacts',    key: 'CTCT', minRole: 'all'      },
   { to: '/reports',     icon: FileText,        label: 'Reports',     key: 'RPTS', minRole: 'all'      },

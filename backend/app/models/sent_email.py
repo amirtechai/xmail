@@ -54,5 +54,7 @@ class SentEmail(Base):
     # Webhook-reported timestamps (first occurrence only)
     opened_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     clicked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    # Set when IMAP reply detection detects an inbound reply
+    replied_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     __table_args__ = (Index("ix_sent_email_campaign_status", "campaign_id", "status"),)

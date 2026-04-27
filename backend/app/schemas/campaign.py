@@ -20,6 +20,7 @@ class CampaignCreate(BaseModel):
     legitimate_interest_reason: str = ""
     scheduled_at: datetime | None = None
     batch_size_per_hour: int | None = None
+    hourly_limit: int = 50
     dry_run: bool = False
 
 
@@ -38,6 +39,7 @@ class CampaignOut(BaseModel):
     legitimate_interest_reason: str
     scheduled_at: str | None
     batch_size_per_hour: int | None
+    hourly_limit: int
     dry_run: bool
     created_at: str
 

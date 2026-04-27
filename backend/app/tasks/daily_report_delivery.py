@@ -4,12 +4,12 @@ Sends the generated PDF/summary to configured admin emails.
 """
 
 import asyncio
-import logging
 from datetime import date, datetime, timezone
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @celery_app.task(name="app.tasks.daily_report_delivery.deliver_daily_report", bind=True)
@@ -63,7 +63,7 @@ async def _deliver(report_date: date) -> dict:
     async with async_session_factory() as session:
         contacts_result = await session.execute(
             select(DiscoveredContact).where(
-                func.date(DiscoveredContact.created_at) == report_date
+                func.date(DiscoveredContact.discovered_at) == report_date
             ).order_by(DiscoveredContact.confidence_score.desc()).limit(50)
         )
         contacts = [

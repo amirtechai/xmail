@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     zerobounce_api_key: str = Field(default="")
     hunter_api_key: str = Field(default="")
     proxycurl_api_key: str = Field(default="")
+    apollo_api_key: str = Field(default="")
+    pdl_api_key: str = Field(default="")
     serpapi_api_key: str = Field(default="")
     finnhub_api_key: str = Field(default="")
 

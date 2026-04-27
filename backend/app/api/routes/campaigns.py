@@ -1,6 +1,7 @@
 """Campaign CRUD + AI draft + test send + send dispatch + analytics."""
 
 import uuid
+from datetime import date, timedelta
 from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -16,6 +17,7 @@ from app.models.sent_email import SentEmail, SentEmailStatus
 from app.models.smtp_config import SMTPConfiguration
 from app.models.campaign_sequence import CampaignSequence
 from app.models.campaign_sequence_step import CampaignSequenceStep
+from app.models.daily_report import DailyReport
 from app.schemas.campaign import (
     AIDraftRequest,
     AIDraftResponse,
@@ -57,6 +59,7 @@ def _serialize(c: Campaign) -> dict:
         "scheduled_at": meta.get("scheduled_at"),
         "batch_size_per_hour": meta.get("batch_size_per_hour"),
         "dry_run": meta.get("dry_run", False),
+        "hourly_limit": c.hourly_limit,
         "created_at": c.created_at.isoformat(),
     }
 
@@ -90,6 +93,7 @@ async def create_campaign(body: CampaignCreate, session: SessionDep, user: Opera
         email_body_html=sanitize_html(body.email_body_html) if body.email_body_html else "",
         email_body_text=body.email_body_text,
         legitimate_interest_reason=body.legitimate_interest_reason,
+        hourly_limit=body.hourly_limit,
         attachments_metadata=meta,
     )
     session.add(c)
@@ -142,6 +146,7 @@ async def update_campaign(
     c.email_body_html = sanitize_html(body.email_body_html) if body.email_body_html else ""
     c.email_body_text = body.email_body_text
     c.legitimate_interest_reason = body.legitimate_interest_reason
+    c.hourly_limit = body.hourly_limit
     c.attachments_metadata = meta
     await session.commit()
     await session.refresh(c)
@@ -490,6 +495,132 @@ async def campaign_stats(
         "alerts": alerts,
         "ab_results": ab_results,
         "created_at": c.created_at.isoformat(),
+    }
+
+
+@router.get("/stats-overview")
+async def campaign_stats_overview(
+    session: SessionDep,
+    _: CurrentUser,
+    days: int = Query(default=30, ge=7, le=90),
+) -> dict:
+    """Aggregate stats across all campaigns + daily trend from DailyReport."""
+    since = date.today() - timedelta(days=days)
+
+    # Per-campaign summary (last N days by created_at)
+    campaigns_result = await session.execute(
+        select(Campaign).order_by(Campaign.created_at.desc()).limit(20)
+    )
+    campaigns = campaigns_result.scalars().all()
+
+    campaign_rows = []
+    for c in campaigns:
+        sc = await session.execute(
+            select(SentEmail.status, func.count().label("cnt"))
+            .where(SentEmail.campaign_id == c.id)
+            .group_by(SentEmail.status)
+        )
+        counts: dict[str, int] = {row.status: row.cnt for row in sc}
+        sent = sum(counts.get(s, 0) for s in (
+            SentEmailStatus.SENT.value, SentEmailStatus.DELIVERED.value,
+            SentEmailStatus.OPENED.value, SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value, SentEmailStatus.UNSUBSCRIBED.value,
+            SentEmailStatus.BOUNCED.value,
+        ))
+        delivered = sum(counts.get(s, 0) for s in (
+            SentEmailStatus.DELIVERED.value, SentEmailStatus.OPENED.value,
+            SentEmailStatus.CLICKED.value, SentEmailStatus.REPLIED.value,
+            SentEmailStatus.UNSUBSCRIBED.value,
+        ))
+        opened = sum(counts.get(s, 0) for s in (
+            SentEmailStatus.OPENED.value, SentEmailStatus.CLICKED.value,
+            SentEmailStatus.REPLIED.value,
+        ))
+        clicked = sum(counts.get(s, 0) for s in (
+            SentEmailStatus.CLICKED.value, SentEmailStatus.REPLIED.value,
+        ))
+        bounced = counts.get(SentEmailStatus.BOUNCED.value, 0)
+
+        def _r(n: int, d: int) -> float:
+            return round(n / d * 100, 2) if d else 0.0
+
+        meta = c.attachments_metadata or {}
+        campaign_rows.append({
+            "id": str(c.id),
+            "name": c.name,
+            "status": c.status,
+            "sent": sent,
+            "delivered": delivered,
+            "opened": opened,
+            "clicked": clicked,
+            "bounced": bounced,
+            "open_rate": _r(opened, delivered),
+            "click_rate": _r(clicked, opened),
+            "bounce_rate": _r(bounced, sent),
+            "ab_enabled": bool(meta.get("email_subject_b")),
+            "created_at": c.created_at.isoformat(),
+        })
+
+    # Daily trend from DailyReport
+    trend_rows = (
+        await session.execute(
+            select(DailyReport)
+            .where(DailyReport.report_date >= since)
+            .order_by(DailyReport.report_date.asc())
+        )
+    ).scalars().all()
+
+    trend = []
+    for r in trend_rows:
+        delivered_d = r.emails_delivered or r.emails_sent
+        open_rate = round(r.emails_opened / delivered_d * 100, 2) if delivered_d else 0.0
+        click_rate = round(r.emails_clicked / r.emails_opened * 100, 2) if r.emails_opened else 0.0
+        bounce_rate = round(r.emails_bounced / r.emails_sent * 100, 2) if r.emails_sent else 0.0
+        trend.append({
+            "date": str(r.report_date),
+            "sent": r.emails_sent,
+            "opened": r.emails_opened,
+            "clicked": r.emails_clicked,
+            "bounced": r.emails_bounced,
+            "open_rate": open_rate,
+            "click_rate": click_rate,
+            "bounce_rate": bounce_rate,
+        })
+
+    # Aggregate totals
+    totals_result = await session.execute(
+        select(
+            func.sum(DailyReport.emails_sent).label("sent"),
+            func.sum(DailyReport.emails_delivered).label("delivered"),
+            func.sum(DailyReport.emails_opened).label("opened"),
+            func.sum(DailyReport.emails_clicked).label("clicked"),
+            func.sum(DailyReport.emails_bounced).label("bounced"),
+        ).where(DailyReport.report_date >= since)
+    )
+    t = totals_result.one()
+    total_sent = t.sent or 0
+    total_delivered = t.delivered or total_sent
+    total_opened = t.opened or 0
+    total_clicked = t.clicked or 0
+    total_bounced = t.bounced or 0
+
+    def _r2(n: int, d: int) -> float:
+        return round(n / d * 100, 2) if d else 0.0
+
+    return {
+        "period_days": days,
+        "totals": {
+            "sent": total_sent,
+            "delivered": total_delivered,
+            "opened": total_opened,
+            "clicked": total_clicked,
+            "bounced": total_bounced,
+            "open_rate": _r2(total_opened, total_delivered),
+            "click_rate": _r2(total_clicked, total_opened),
+            "bounce_rate": _r2(total_bounced, total_sent),
+        },
+        "trend": trend,
+        "campaigns": campaign_rows,
     }
 
 

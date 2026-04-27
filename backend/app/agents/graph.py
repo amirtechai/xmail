@@ -1,9 +1,10 @@
-"""LangGraph StateGraph definition — 12-node discovery pipeline."""
+"""LangGraph StateGraph definition — 16-node discovery pipeline."""
 
 from functools import partial
 
 from langgraph.graph import END, StateGraph
 
+from app.agents.nodes.apollo_lookup import apollo_lookup_node
 from app.agents.nodes.crawl_urls import crawl_urls_node
 from app.agents.nodes.dedupe_against_db import dedupe_against_db_node
 from app.agents.nodes.enrich_contact import enrich_contact_node
@@ -11,6 +12,7 @@ from app.agents.nodes.extract_emails import extract_emails_node
 from app.agents.nodes.finalize import finalize_node
 from app.agents.nodes.hunter_lookup import hunter_lookup_node
 from app.agents.nodes.infer_email_pattern import infer_email_pattern_node
+from app.agents.nodes.pdl_enrich import pdl_enrich_node
 from app.agents.nodes.persist_contact import persist_contact_node
 from app.agents.nodes.planner import planner_node
 from app.agents.nodes.proxycurl_enrich import proxycurl_enrich_node
@@ -38,9 +40,11 @@ def build_graph(llm_provider, session, redis_client):  # type: ignore[no-untyped
     graph.add_node("extract_emails", extract_emails_node)
     graph.add_node("enrich_contact", partial(enrich_contact_node, llm_provider=llm_provider))
     graph.add_node("proxycurl_enrich", proxycurl_enrich_node)
+    graph.add_node("pdl_enrich", pdl_enrich_node)
     graph.add_node("validate_email", validate_email_node)
     graph.add_node("dedupe", partial(dedupe_against_db_node, session=session, redis_client=redis_client))
     graph.add_node("rss_feed_reader", partial(rss_feed_reader_node, session=session))
+    graph.add_node("apollo_lookup", apollo_lookup_node)
     graph.add_node("infer_email_pattern", infer_email_pattern_node)
     graph.add_node("hunter_lookup", hunter_lookup_node)
     graph.add_node("score_contact", score_contact_node)
@@ -59,9 +63,11 @@ def build_graph(llm_provider, session, redis_client):  # type: ignore[no-untyped
     graph.add_edge("crawl_urls", "extract_emails")
     graph.add_edge("extract_emails", "enrich_contact")
     graph.add_edge("enrich_contact", "proxycurl_enrich")
-    graph.add_edge("proxycurl_enrich", "validate_email")
+    graph.add_edge("proxycurl_enrich", "pdl_enrich")
+    graph.add_edge("pdl_enrich", "validate_email")
     graph.add_edge("validate_email", "dedupe")
-    graph.add_edge("dedupe", "infer_email_pattern")
+    graph.add_edge("dedupe", "apollo_lookup")
+    graph.add_edge("apollo_lookup", "infer_email_pattern")
     graph.add_edge("infer_email_pattern", "hunter_lookup")
     graph.add_edge("hunter_lookup", "score_contact")
     graph.add_edge("score_contact", "persist_contact")

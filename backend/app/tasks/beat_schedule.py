@@ -70,4 +70,16 @@ celery_app.conf.beat_schedule = {
         "task": "app.tasks.rss_scraping_task.refresh_rss_feeds",
         "schedule": crontab(hour=6, minute=0),
     },
+
+    # Finance domain bulk targeting: daily 02:30 UTC (05:30 Istanbul)
+    "domain-bulk-targeting": {
+        "task": "app.tasks.domain_bulk_targeting.celery_domain_bulk_targeting",
+        "schedule": crontab(hour=2, minute=30),
+    },
+
+    # IMAP reply detection: every 30 minutes
+    "imap-reply-checker": {
+        "task": "app.tasks.imap_reply_checker.check_imap_replies",
+        "schedule": crontab(minute="*/30"),
+    },
 }

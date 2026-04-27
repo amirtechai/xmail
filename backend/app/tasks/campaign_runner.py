@@ -1,4 +1,4 @@
-"""Campaign send task — batched delivery with optional A/B split."""
+"""Campaign send task — batched delivery with optional A/B split and hourly rate limiting."""
 
 import asyncio
 
@@ -10,14 +10,16 @@ logger = get_logger(__name__)
 
 @celery_app.task(name="app.tasks.campaign_runner.send_campaign", bind=True)
 def send_campaign(self, campaign_id: str) -> dict:  # type: ignore[override]
-    return asyncio.get_event_loop().run_until_complete(_send(campaign_id))
+    result = asyncio.get_event_loop().run_until_complete(_send(self, campaign_id))
+    return result
 
 
-async def _send(campaign_id: str) -> dict:
+async def _send(task_self, campaign_id: str) -> dict:
     import hashlib
     import uuid as _uuid
+    from datetime import datetime, timedelta
 
-    from sqlalchemy import select
+    from sqlalchemy import func, select
 
     from app.database import async_session_factory
     from app.models.campaign import Campaign, CampaignStatus
@@ -52,7 +54,35 @@ async def _send(campaign_id: str) -> dict:
 
         meta = campaign.attachments_metadata or {}
         subject_b: str | None = meta.get("email_subject_b")
-        batch_size: int = int(meta.get("batch_size_per_hour") or 50)
+        hourly_limit: int = campaign.hourly_limit if campaign.hourly_limit > 0 else 9999
+        batch_size: int = int(meta.get("batch_size_per_hour") or hourly_limit)
+
+        # Enforce hourly rate limit: count emails sent in the last hour
+        one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+        sent_last_hour: int = (
+            await session.execute(
+                select(func.count())
+                .select_from(SentEmail)
+                .where(
+                    SentEmail.campaign_id == campaign.id,
+                    SentEmail.sent_at >= one_hour_ago,
+                    SentEmail.status != SentEmailStatus.QUEUED.value,
+                )
+            )
+        ).scalar_one()
+
+        if sent_last_hour >= hourly_limit:
+            logger.info(
+                "send_campaign_rate_limited",
+                campaign_id=campaign_id,
+                sent_last_hour=sent_last_hour,
+                hourly_limit=hourly_limit,
+            )
+            task_self.apply_async(args=[campaign_id], countdown=3600)
+            return {"sent": 0, "failed": 0, "status": "rate_limited", "retry_in": 3600}
+
+        remaining = hourly_limit - sent_last_hour
+        batch_size = min(batch_size, remaining)
 
         # Find contacts matching campaign audience types, excluding already-sent
         audience_keys = campaign.target_audience_type_ids or []
@@ -127,7 +157,6 @@ async def _send(campaign_id: str) -> dict:
                 )
                 sent_email.status = SentEmailStatus.SENT.value
                 sent_email.message_id = msg_id
-                from datetime import datetime
                 sent_email.sent_at = datetime.utcnow()
                 sent_count += 1
             except Exception as exc:
