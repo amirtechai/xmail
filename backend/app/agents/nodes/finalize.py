@@ -42,6 +42,6 @@ async def finalize_node(state: XmailState, session) -> dict:  # type: ignore[no-
         report.contacts_verified = (report.contacts_verified or 0) + validated
         await session.commit()
     except Exception as exc:
-        logger.warning("daily_report_update_failed", error=str(exc))
+        logger.warning("daily_report_update_failed", reason=str(exc))
 
     return {}

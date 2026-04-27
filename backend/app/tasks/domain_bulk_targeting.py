@@ -128,7 +128,7 @@ async def run_domain_bulk_targeting(session) -> dict:  # type: ignore[no-untyped
 
         except Exception as exc:
             await session.rollback()
-            logger.warning("domain_bulk_domain_error", domain=domain, error=str(exc))
+            logger.warning("domain_bulk_domain_error", domain=domain, reason=str(exc))
             errors += 1
 
     logger.info("domain_bulk_complete", new_contacts=new_count, errors=errors)

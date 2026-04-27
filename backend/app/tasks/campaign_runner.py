@@ -160,7 +160,7 @@ async def _send(task_self, campaign_id: str) -> dict:
                 sent_email.sent_at = datetime.utcnow()
                 sent_count += 1
             except Exception as exc:
-                logger.warning("send_email_failed", contact=contact.email, error=str(exc))
+                logger.warning("send_email_failed", contact=contact.email, reason=str(exc))
                 sent_email.status = SentEmailStatus.BOUNCED.value
                 sent_email.bounce_reason = str(exc)[:255]
                 failed_count += 1

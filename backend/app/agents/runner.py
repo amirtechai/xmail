@@ -81,7 +81,7 @@ async def run_discovery(
         run.status = RunStatus.COMPLETED.value
         run.contacts_discovered = final_state.get("persisted_count", 0)
     except Exception as exc:
-        logger.error("agent_run_failed", run_id=str(run.id), error=str(exc))
+        logger.error("agent_run_failed", run_id=str(run.id), reason=str(exc))
         run.status = RunStatus.FAILED.value
         run.error_message = str(exc)[:500]
     finally:

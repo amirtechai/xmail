@@ -73,7 +73,7 @@ async def search_web_node(state: XmailState) -> dict:
                     seen.add(url)
                     collected.append(url)
         except Exception as exc:
-            logger.warning("search_query_failed", query=query[:80], error=str(exc))
+            logger.warning("search_query_failed", query=query[:80], reason=str(exc))
 
     logger.info("search_web_done", url_count=len(collected))
     return {"raw_urls": collected}

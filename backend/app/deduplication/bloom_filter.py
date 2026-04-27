@@ -24,7 +24,7 @@ async def bf_initialize(redis: Redis) -> None:
     except Exception as exc:
         # BF.RESERVE raises if key already exists — that's fine
         if "already exists" not in str(exc).lower():
-            logger.warning("bloom_filter_reserve_error", error=str(exc))
+            logger.warning("bloom_filter_reserve_error", reason=str(exc))
 
 
 async def bf_add(redis: Redis, email_hash: str) -> bool:

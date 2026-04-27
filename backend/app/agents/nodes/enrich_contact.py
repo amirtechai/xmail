@@ -56,7 +56,7 @@ async def enrich_contact_node(state: XmailState, llm_provider) -> dict:  # type:
             if isinstance(contacts, list):
                 enriched.extend(contacts)
         except Exception as exc:
-            logger.warning("enrich_batch_failed", error=str(exc))
+            logger.warning("enrich_batch_failed", reason=str(exc))
             # Fallback: bare contact records with just email
             enriched.extend({"email": e, "name": None, "company": None, "title": None, "linkedin_url": None} for e in batch)
 

@@ -31,7 +31,7 @@ def process_webhook_event(self, payload: dict) -> dict:  # type: ignore[override
     try:
         return asyncio.get_event_loop().run_until_complete(_process(payload))
     except Exception as exc:
-        logger.warning("webhook_processor_retry", error=str(exc), payload=payload)
+        logger.warning("webhook_processor_retry", reason=str(exc), payload=payload)
         raise self.retry(exc=exc)
 
 

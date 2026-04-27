@@ -34,7 +34,7 @@ async def proxycurl_enrich_node(state: XmailState) -> dict:
             contact["proxycurl_raw"] = profile
             enriched_count += 1
         except Exception as exc:
-            logger.warning("proxycurl_enrich_failed", linkedin_url=linkedin_url, error=str(exc))
+            logger.warning("proxycurl_enrich_failed", linkedin_url=linkedin_url, reason=str(exc))
 
     logger.info("proxycurl_enrich_done", enriched=enriched_count, total=len(contacts))
     return {"enriched_contacts": contacts}

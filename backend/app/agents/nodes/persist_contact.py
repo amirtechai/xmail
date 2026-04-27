@@ -43,7 +43,7 @@ async def persist_contact_node(state: XmailState, session) -> dict:  # type: ign
         await session.commit()
     except Exception as exc:
         await session.rollback()
-        logger.error("persist_failed", error=str(exc))
+        logger.error("persist_failed", reason=str(exc))
         return {"persisted_count": 0, "error": str(exc)}
 
     logger.info("persist_done", saved=saved)

@@ -81,7 +81,7 @@ async def planner_node(state: XmailState, llm_provider) -> dict:  # type: ignore
         logger.info("planner_done", query_count=len(queries), audience=audience, finance=is_finance)
         return {"search_queries": queries[:count]}
     except Exception as exc:
-        logger.error("planner_error", error=str(exc))
+        logger.error("planner_error", reason=str(exc))
         if is_finance:
             return {"search_queries": _FINANCE_FALLBACK_QUERIES[:count], "error": str(exc)}
         fallback = [

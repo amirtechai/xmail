@@ -87,7 +87,7 @@ async def pdl_enrich_node(state: XmailState) -> dict:
             budget -= 1
 
         except Exception as exc:
-            logger.warning("pdl_enrich_error", email=contact.get("email"), error=str(exc))
+            logger.warning("pdl_enrich_error", email=contact.get("email"), reason=str(exc))
 
     logger.info("pdl_enrich_done", enriched=enriched_count, total=len(contacts))
     return {"enriched_contacts": contacts}

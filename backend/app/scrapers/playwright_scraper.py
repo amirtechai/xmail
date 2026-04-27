@@ -35,5 +35,5 @@ async def scrape_with_playwright(url: str) -> dict | None:
             await browser.close()
             return {"url": url, "html": html, "text": text}
     except Exception as exc:
-        logger.debug("playwright_failed", url=url[:80], error=str(exc))
+        logger.debug("playwright_failed", url=url[:80], reason=str(exc))
         return None

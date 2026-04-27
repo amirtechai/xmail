@@ -44,5 +44,5 @@ async def _update() -> dict:
         return {"updated": len(domains)}
 
     except Exception as exc:
-        logger.warning("dea_list_update_failed", error=str(exc))
+        logger.warning("dea_list_update_failed", reason=str(exc))
         return {"error": str(exc)}

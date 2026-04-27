@@ -30,7 +30,7 @@ async def rss_feed_reader_node(state: XmailState, session) -> dict:  # type: ign
             )
         )).scalars().all()
     except Exception as exc:
-        logger.warning("rss_db_error", error=str(exc))
+        logger.warning("rss_db_error", reason=str(exc))
         return {}
 
     if not sources:
@@ -53,7 +53,7 @@ async def rss_feed_reader_node(state: XmailState, session) -> dict:  # type: ign
             source.last_scraped_at = datetime.utcnow()
             logger.debug("rss_parsed", source=source.name, entries=count)
         except Exception as exc:
-            logger.warning("rss_parse_error", source=source.url, error=str(exc))
+            logger.warning("rss_parse_error", source=source.url, reason=str(exc))
 
     if new_urls:
         await session.commit()

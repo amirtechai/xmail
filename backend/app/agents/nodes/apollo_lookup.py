@@ -45,7 +45,7 @@ async def apollo_lookup_node(state: XmailState) -> dict:
         try:
             people = await client.finance_people_search(keywords=keywords or None, page=page, per_page=_PER_PAGE)
         except Exception as exc:
-            logger.warning("apollo_search_error", page=page, error=str(exc))
+            logger.warning("apollo_search_error", page=page, reason=str(exc))
             break
 
         if not people:

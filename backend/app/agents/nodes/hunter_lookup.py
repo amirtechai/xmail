@@ -87,7 +87,7 @@ async def hunter_lookup_node(state: XmailState) -> dict:
                 })
                 existing_emails.add(h.email.lower())
         except Exception as exc:
-            logger.warning("hunter_domain_error", domain=domain, error=str(exc))
+            logger.warning("hunter_domain_error", domain=domain, reason=str(exc))
 
     if new_contacts:
         logger.info("hunter_found", count=len(new_contacts), domains=len(domains[:_MAX_DOMAINS]))

@@ -96,7 +96,7 @@ async def _run() -> dict:
                         sent.status = SentEmailStatus.REPLIED.value
                         total_replied += 1
             except Exception as exc:
-                logger.warning("imap_check_failed", smtp_config=str(cfg.id), error=str(exc))
+                logger.warning("imap_check_failed", smtp_config=str(cfg.id), reason=str(exc))
 
         await session.commit()
 
@@ -140,7 +140,7 @@ def _sync_fetch_reply_tos(
     try:
         mail = imaplib.IMAP4_SSL(imap_host, timeout=10)
     except Exception as exc:
-        logger.debug("imap_connect_failed", host=imap_host, error=str(exc))
+        logger.debug("imap_connect_failed", host=imap_host, reason=str(exc))
         return []
 
     reply_tos: list[str] = []
@@ -165,7 +165,7 @@ def _sync_fetch_reply_tos(
                 if irt:
                     reply_tos.append(irt)
             except Exception as exc:
-                logger.debug("imap_fetch_error", error=str(exc))
+                logger.debug("imap_fetch_error", reason=str(exc))
     finally:
         try:
             mail.logout()

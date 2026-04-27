@@ -20,7 +20,7 @@ def run_scraping_task(self, campaign_id: str, audience_type: str) -> dict:  # ty
             _scrape(campaign_id, audience_type)
         )
     except Exception as exc:
-        logger.error("scraping_task_failed", campaign_id=campaign_id, error=str(exc))
+        logger.error("scraping_task_failed", campaign_id=campaign_id, reason=str(exc))
         raise self.retry(exc=exc)
 
 

@@ -43,7 +43,7 @@ async def _crawl_single(url: str) -> dict | None:
             return await _fetch_firecrawl(url, settings.firecrawl_api_key)
         return await _fetch_httpx(url)
     except Exception as exc:
-        logger.debug("crawl_failed", url=url[:80], error=str(exc))
+        logger.debug("crawl_failed", url=url[:80], reason=str(exc))
         return None
 
 

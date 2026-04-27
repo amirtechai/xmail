@@ -132,7 +132,7 @@ async def infer_email_pattern_node(state: XmailState) -> dict:
             try:
                 result = await validate_email(email)
             except Exception as exc:
-                logger.warning("infer_validate_error", email=email, error=str(exc))
+                logger.warning("infer_validate_error", email=email, reason=str(exc))
                 return None
             if result.status not in ("valid", "catch_all"):
                 return None

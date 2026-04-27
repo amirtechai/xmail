@@ -25,7 +25,7 @@ def refresh_rss_feeds(self) -> dict:  # type: ignore[override]
     try:
         return asyncio.get_event_loop().run_until_complete(_refresh())
     except Exception as exc:
-        logger.error("rss_refresh_failed", error=str(exc))
+        logger.error("rss_refresh_failed", reason=str(exc))
         raise self.retry(exc=exc)
 
 
@@ -66,7 +66,7 @@ async def _refresh() -> dict:
                 logger.debug("rss_refreshed", source=source.name, entries=count)
             except Exception as exc:
                 feeds_error += 1
-                logger.warning("rss_refresh_error", source=source.url, error=str(exc))
+                logger.warning("rss_refresh_error", source=source.url, reason=str(exc))
 
         if feeds_ok:
             await session.commit()

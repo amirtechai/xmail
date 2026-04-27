@@ -150,7 +150,7 @@ border-radius:8px;padding:2rem;">
             )
             sent_to.append(email)
         except Exception as exc:
-            logger.warning("report_email_failed", recipient=email, error=str(exc))
+            logger.warning("report_email_failed", recipient=email, reason=str(exc))
             failed.append(email)
 
     logger.info(
