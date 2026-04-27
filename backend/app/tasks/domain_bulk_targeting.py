@@ -7,9 +7,9 @@ import asyncio
 import hashlib
 import uuid
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 # Known finance firm domains — authoritative list, extend as needed

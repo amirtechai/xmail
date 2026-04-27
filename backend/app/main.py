@@ -1,7 +1,7 @@
 """FastAPI application factory."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 import sentry_sdk
 from fastapi import FastAPI
@@ -27,12 +27,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     # Warm up bloom filter from DB on startup
     try:
+        from sqlalchemy import select
+
         from app.database import async_session_factory, get_redis
         from app.deduplication.bloom_filter import bf_initialize, bf_warmup
         from app.deduplication.db_checker import load_all_hashes
         from app.deduplication.hasher import hash_email
         from app.models.suppression_list import SuppressionList
-        from sqlalchemy import select
 
         redis = await get_redis()
         await bf_initialize(redis)

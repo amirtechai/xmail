@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import httpx
 
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 _BASE = "https://api.hunter.io/v2"

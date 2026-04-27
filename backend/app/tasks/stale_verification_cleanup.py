@@ -5,11 +5,11 @@ Removes unverified contacts older than 90 days and resets
 """
 
 import asyncio
-from datetime import datetime, timedelta, timezone
-
-from app.tasks.celery_app import celery_app
+from datetime import UTC, datetime, timedelta
 
 from app.core.logger import get_logger
+from app.tasks.celery_app import celery_app
+
 logger = get_logger(__name__)
 
 UNVERIFIED_TTL_DAYS = 90
@@ -22,11 +22,12 @@ def cleanup_stale_verifications(self) -> dict:  # type: ignore[override]
 
 
 async def _cleanup() -> dict:
-    from app.database import async_session_factory
-    from app.models.discovered_contact import DiscoveredContact, VerifiedStatus
     from sqlalchemy import delete, update
 
-    now = datetime.now(timezone.utc)
+    from app.database import async_session_factory
+    from app.models.discovered_contact import DiscoveredContact, VerifiedStatus
+
+    now = datetime.now(UTC)
     unverified_cutoff = now - timedelta(days=UNVERIFIED_TTL_DAYS)
     risky_cutoff = now - timedelta(days=RISKY_REVERIFY_DAYS)
 

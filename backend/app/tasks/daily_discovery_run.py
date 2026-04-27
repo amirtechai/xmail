@@ -15,9 +15,10 @@ def run_discovery_cycle(self) -> dict:  # type: ignore[override]
 
 
 async def _run() -> dict:
+    from sqlalchemy import select
+
     from app.database import async_session_factory
     from app.models.bot_state import BotState, BotStateEnum
-    from sqlalchemy import select
 
     async with async_session_factory() as session:
         result = await session.execute(select(BotState).where(BotState.id == 1))
@@ -34,9 +35,10 @@ async def _run() -> dict:
 
 
 async def _dispatch_campaigns() -> int:
+    from sqlalchemy import select
+
     from app.database import async_session_factory
     from app.models.campaign import Campaign, CampaignStatus
-    from sqlalchemy import select
 
     async with async_session_factory() as session:
         result = await session.execute(
@@ -58,11 +60,12 @@ def run_campaign_discovery(self, campaign_id: str) -> dict:  # type: ignore[over
 async def _run_campaign(campaign_id: str) -> dict:
     import uuid as _uuid
 
+    from sqlalchemy import select
+
     from app.agents.runner import run_discovery
     from app.database import async_session_factory, get_redis
     from app.models.campaign import Campaign
     from app.models.target_audience_type import TargetAudienceType
-    from sqlalchemy import select
 
     async with async_session_factory() as session:
         redis = await get_redis()

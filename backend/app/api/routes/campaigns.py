@@ -2,27 +2,27 @@
 
 import uuid
 from datetime import date, timedelta
-from datetime import datetime
 
 from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy import func, select
 
-from app.api.deps import AdminUser, CurrentUser, OperatorUser, SessionDep
+from app.api.deps import CurrentUser, OperatorUser, SessionDep
+from app.core.security import sanitize_html
+from app.core.spam_checker import check_spam
 from app.llm.base import LLMMessage
 from app.llm.router import build_provider
 from app.models.campaign import Campaign, CampaignStatus
+from app.models.campaign_sequence import CampaignSequence
+from app.models.campaign_sequence_step import CampaignSequenceStep
+from app.models.daily_report import DailyReport
 from app.models.discovered_contact import DiscoveredContact
 from app.models.llm_config import LLMConfiguration
 from app.models.sent_email import SentEmail, SentEmailStatus
 from app.models.smtp_config import SMTPConfiguration
-from app.models.campaign_sequence import CampaignSequence
-from app.models.campaign_sequence_step import CampaignSequenceStep
-from app.models.daily_report import DailyReport
 from app.schemas.campaign import (
     AIDraftRequest,
     AIDraftResponse,
     CampaignCreate,
-    CampaignOut,
     PreviewRequest,
     PreviewResponse,
     SendRequest,
@@ -32,8 +32,6 @@ from app.schemas.campaign import (
     SequenceUpdate,
     TestSendRequest,
 )
-from app.core.security import sanitize_html
-from app.core.spam_checker import check_spam
 from app.sender.compliance import inject_compliance_footer as inject_footer
 from app.sender.smtp_client import SMTPClient
 

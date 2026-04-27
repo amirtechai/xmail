@@ -7,9 +7,9 @@ Processes contacts in batches; updates verified_status, confidence_score, mx_val
 import asyncio
 from datetime import datetime
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 

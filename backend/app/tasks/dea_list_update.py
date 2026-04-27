@@ -12,9 +12,9 @@ from pathlib import Path
 
 import httpx
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 DEA_CACHE_PATH = Path("/tmp/xmail_dea_domains.json")  # noqa: S108

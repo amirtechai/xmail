@@ -6,9 +6,9 @@ Also registered as a Celery task for on-demand re-seeding.
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 # Finance-specific scraping sources
@@ -126,7 +126,9 @@ async def _run() -> dict:
 
 async def run_seeder(session) -> dict:  # type: ignore[no-untyped-def]
     import uuid
+
     from sqlalchemy import select
+
     from app.models.scraping_source import ScrapingSource
 
     added = 0

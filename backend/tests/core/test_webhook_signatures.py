@@ -8,7 +8,6 @@ import hmac as _hmac
 
 import pytest
 
-
 # ── verify_mailgun ────────────────────────────────────────────────────────────
 
 class TestVerifyMailgun:
@@ -76,15 +75,14 @@ class TestVerifySendgrid:
     @pytest.fixture(scope="class")
     def ec_keypair(self):
         from cryptography.hazmat.primitives.asymmetric import ec
-        from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
         private_key = ec.generate_private_key(ec.SECP256R1())
         public_key_pem = private_key.public_key().public_bytes(Encoding.PEM, PublicFormat.SubjectPublicKeyInfo).decode()
         return private_key, public_key_pem
 
     def _make_sig(self, private_key, timestamp: str, body: bytes) -> str:
-        from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
         payload = timestamp.encode() + body
         sig = private_key.sign(payload, ec.ECDSA(hashes.SHA256()))
         return base64.b64encode(sig).decode()
@@ -98,9 +96,10 @@ class TestVerifySendgrid:
         assert verify_sendgrid(body, sig, ts, pub_pem) is True
 
     def test_wrong_key(self, ec_keypair):
-        from app.core.webhook_signatures import verify_sendgrid
         from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
+
+        from app.core.webhook_signatures import verify_sendgrid
         priv, _ = ec_keypair
         body = b'[{"event":"open"}]'
         ts = "1714000000"

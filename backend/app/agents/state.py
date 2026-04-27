@@ -1,9 +1,9 @@
 """LangGraph shared state definition for the Xmail discovery pipeline."""
 
-from typing import Annotated, Any
-from typing_extensions import NotRequired, TypedDict
+from typing import Annotated, Any, NotRequired
 
 from langgraph.graph.message import add_messages
+from typing_extensions import TypedDict
 
 
 class XmailState(TypedDict):

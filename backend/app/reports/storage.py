@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import date, timedelta, timezone, datetime
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 # Reports stored under /var/xmail/reports/<YYYY>/<MM>/<DD>/
@@ -47,7 +48,7 @@ def cleanup_old_reports() -> int:
     if not _BASE_DIR.exists():
         return 0
 
-    cutoff = datetime.now(timezone.utc).date() - timedelta(days=RETENTION_DAYS)
+    cutoff = datetime.now(UTC).date() - timedelta(days=RETENTION_DAYS)
     deleted = 0
     for f in _BASE_DIR.rglob("xmail_report_*.pdf"):
         try:

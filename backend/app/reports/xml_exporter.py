@@ -6,8 +6,7 @@ Uses defusedxml for safe parsing and lxml for generation + validation.
 
 from __future__ import annotations
 
-import io
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -95,7 +94,7 @@ def generate_xml(
     # Meta
     meta = etree.SubElement(root, "Meta")
     _text(meta, "ReportDate", report.report_date.isoformat())
-    _text(meta, "GeneratedAt", datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"))
+    _text(meta, "GeneratedAt", datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"))
     _text(meta, "Version", "1.0")
 
     # Summary

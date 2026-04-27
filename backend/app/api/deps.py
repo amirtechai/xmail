@@ -28,7 +28,7 @@ async def get_current_user(
             raise UnauthorizedError("Invalid token type")
         user_id: str = payload["sub"]
     except (JWTError, KeyError):
-        raise UnauthorizedError()
+        raise UnauthorizedError() from None
 
     result = await session.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()

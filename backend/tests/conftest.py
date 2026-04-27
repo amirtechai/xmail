@@ -1,7 +1,6 @@
 """Shared fixtures for all test modules."""
 
 import uuid
-from collections.abc import AsyncGenerator
 from datetime import datetime
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
@@ -11,7 +10,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import hash_password
 from app.models.user import User, UserRole
-
 
 # ── Test user factory ─────────────────────────────────────────────────────────
 

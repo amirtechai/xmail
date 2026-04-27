@@ -5,9 +5,9 @@ Ensures bloom filter stays in sync with DB suppression list.
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -17,11 +17,12 @@ def sync_suppression_list(self) -> dict:  # type: ignore[override]
 
 
 async def _sync() -> dict:
+    from sqlalchemy import select
+
     from app.database import async_session_factory, get_redis
     from app.deduplication.bloom_filter import bf_add_batch
     from app.deduplication.hasher import hash_email
     from app.models.suppression_list import SuppressionList
-    from sqlalchemy import select
 
     async with async_session_factory() as session:
         result = await session.execute(select(SuppressionList.email))

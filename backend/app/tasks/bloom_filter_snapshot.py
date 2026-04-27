@@ -5,9 +5,9 @@ Rebuilds bloom filter from DB to prevent drift after restarts.
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -17,12 +17,13 @@ def snapshot_bloom_filter(self) -> dict:  # type: ignore[override]
 
 
 async def _snapshot() -> dict:
+    from sqlalchemy import select
+
     from app.database import async_session_factory, get_redis
     from app.deduplication.bloom_filter import BF_KEY, bf_initialize, bf_warmup
     from app.deduplication.db_checker import load_all_hashes
     from app.deduplication.hasher import hash_email
     from app.models.suppression_list import SuppressionList
-    from sqlalchemy import select
 
     async with async_session_factory() as session:
         # Load all discovered hashes

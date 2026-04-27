@@ -7,8 +7,8 @@ Skipped silently when HUNTER_API_KEY is not configured.
 from urllib.parse import urlparse
 
 from app.agents.state import XmailState
-
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 _MAX_DOMAINS = 5      # API quota guard per pipeline run

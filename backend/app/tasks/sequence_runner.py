@@ -12,9 +12,9 @@ For each active CampaignSequence:
 import asyncio
 from datetime import datetime, timedelta
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -132,8 +132,9 @@ async def _run() -> dict:
 
 async def _send_step(session, seq, step, initial_send) -> bool:  # type: ignore[no-untyped-def]
     """Send one follow-up step and record it as a SentEmail."""
-    from app.models.sent_email import SentEmail, SentEmailStatus
     import hashlib
+
+    from app.models.sent_email import SentEmail, SentEmailStatus
 
     if not step.email_subject or not step.email_body_html:
         return False

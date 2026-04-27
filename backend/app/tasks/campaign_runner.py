@@ -124,13 +124,8 @@ async def _send(task_self, campaign_id: str) -> dict:
             first_name = contact.first_name or contact.full_name or "there"
             company_name = contact.company or ""
 
-            def interpolate(t: str) -> str:
-                return (
-                    t.replace("{first_name}", first_name)
-                     .replace("{company}", company_name)
-                )
-
-            token = str(_uuid.uuid4())
+            def interpolate(t: str, _fn: str = first_name, _cn: str = company_name) -> str:
+                return t.replace("{first_name}", _fn).replace("{company}", _cn)
             body_hash = hashlib.sha256(body_html.encode()).hexdigest()
 
             sent_email = SentEmail(

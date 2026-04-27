@@ -31,10 +31,7 @@ def _is_likely_personal(email: str) -> bool:
     local, domain = email.lower().split("@", 1)
     if domain in _BLOCKED_DOMAINS:
         return False
-    if local in _ROLE_PREFIXES:
-        return False
-    # At least one dot or digit in local — filters "name@domain" catch-alls
-    return True
+    return local not in _ROLE_PREFIXES
 
 
 def extract_emails_from_text(text: str) -> list[str]:

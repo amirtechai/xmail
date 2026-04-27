@@ -1,9 +1,8 @@
 """Report management endpoints."""
 
-from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,8 +12,6 @@ from app.models.daily_report import DailyReport
 from app.models.discovered_contact import DiscoveredContact
 from app.reports import pdf_generator, storage, xml_exporter
 from app.schemas.report import ReportGenerateRequest, ReportListItem, ReportListResponse
-
-from fastapi import Depends
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -48,7 +45,8 @@ async def generate_report(
     if not report:
         raise HTTPException(status_code=404, detail=f"No report data for {body.report_date}")
 
-    from sqlalchemy import cast, Date as SADate
+    from sqlalchemy import Date as SADate
+    from sqlalchemy import cast
 
     contacts_result = await session.execute(
         select(DiscoveredContact).where(
@@ -94,7 +92,7 @@ async def download_pdf(report_date: str, _: CurrentUser) -> FileResponse:
     try:
         d = date.fromisoformat(report_date)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.") from None
 
     path = storage.pdf_path(d)
     if not path.exists():
@@ -113,7 +111,7 @@ async def download_xml(report_date: str, _: CurrentUser) -> FileResponse:
     try:
         d = date.fromisoformat(report_date)
     except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.")
+        raise HTTPException(status_code=400, detail="Invalid date format. Use YYYY-MM-DD.") from None
 
     path = storage.xml_path(d)
     if not path.exists():

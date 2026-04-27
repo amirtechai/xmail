@@ -8,9 +8,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from app.models.campaign import Campaign, CampaignStatus
-from app.models.sent_email import SentEmail, SentEmailStatus
+from app.models.sent_email import SentEmail
 from app.models.smtp_config import SMTPConfiguration
-
 
 # ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -326,7 +325,6 @@ class TestABSplit:
 
         added_emails: list[SentEmail] = []
 
-        real_add = session.add
         def capture_add(obj: object) -> None:
             if isinstance(obj, SentEmail):
                 added_emails.append(obj)

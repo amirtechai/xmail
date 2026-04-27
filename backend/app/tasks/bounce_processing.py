@@ -5,9 +5,9 @@ Reads SentEmail rows with BOUNCED status and adds them to suppression list.
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -17,11 +17,12 @@ def process_bounces(self) -> dict:  # type: ignore[override]
 
 
 async def _process() -> dict:
+    from sqlalchemy import select
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+
     from app.database import async_session_factory
     from app.models.sent_email import SentEmail, SentEmailStatus
     from app.models.suppression_list import SuppressionList, SuppressionReason
-    from sqlalchemy import select
-    from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     async with async_session_factory() as session:
         # Find bounced emails not yet suppressed

@@ -4,7 +4,7 @@ Capacity: 10M items, false-positive rate: 0.001 (0.1%).
 Uses Redis BF (RedisBloom) commands via redis-py.
 """
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from redis.asyncio import Redis
 

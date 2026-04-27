@@ -1,6 +1,5 @@
 """Unit tests for app.core.auth — JWT helpers and bcrypt password hashing."""
 
-import time
 
 import pytest
 from jose import JWTError
@@ -13,7 +12,6 @@ from app.core.auth import (
     hash_password,
     verify_password,
 )
-
 
 # ── Password hashing ──────────────────────────────────────────────────────────
 

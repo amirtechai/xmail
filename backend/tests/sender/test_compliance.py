@@ -4,14 +4,11 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import pytest
-
 from app.sender.compliance import (
     build_unsubscribe_url,
     check_suppression_required,
     inject_compliance_footer,
 )
-
 
 # ── build_unsubscribe_url ─────────────────────────────────────────────────────
 

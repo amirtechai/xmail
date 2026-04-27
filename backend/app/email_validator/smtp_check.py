@@ -1,7 +1,6 @@
 """SMTP RCPT-TO check for mailbox existence and catch-all detection."""
 
 import asyncio
-import socket
 
 import dns.asyncresolver
 import dns.exception
@@ -34,7 +33,6 @@ async def check_smtp(email: str) -> tuple[bool, bool]:
 
     async def _probe(address: str) -> bool:
         try:
-            loop = asyncio.get_event_loop()
             reader, writer = await asyncio.wait_for(
                 asyncio.open_connection(mx, 25),
                 timeout=_SMTP_TIMEOUT,

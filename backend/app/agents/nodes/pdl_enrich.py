@@ -8,8 +8,8 @@ Only processes contacts with score > 50 or that have name + company.
 
 
 from app.agents.state import XmailState
-
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 _MIN_SCORE_TO_ENRICH = 50

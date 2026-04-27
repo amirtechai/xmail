@@ -7,8 +7,8 @@ Adds verified finance professionals to deduplicated_contacts.
 
 
 from app.agents.state import XmailState
-
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 _MAX_PAGES = 3

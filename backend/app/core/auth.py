@@ -1,6 +1,6 @@
 """JWT authentication helpers."""
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import bcrypt
 from jose import JWTError, jwt
@@ -18,7 +18,7 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
-    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
+    expire = datetime.now(UTC) + (expires_delta or timedelta(minutes=15))
     return jwt.encode(
         {"sub": subject, "exp": expire, "type": "access"},
         settings.secret_key,
@@ -27,7 +27,7 @@ def create_access_token(subject: str, expires_delta: timedelta | None = None) ->
 
 
 def create_refresh_token(subject: str) -> str:
-    expire = datetime.now(timezone.utc) + timedelta(days=7)
+    expire = datetime.now(UTC) + timedelta(days=7)
     return jwt.encode(
         {"sub": subject, "exp": expire, "type": "refresh"},
         settings.secret_key,

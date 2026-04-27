@@ -7,9 +7,9 @@ happens via rss_feed_reader_node inside the LangGraph pipeline.
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 _MAX_ENTRIES_PER_FEED = 50
@@ -26,17 +26,17 @@ def refresh_rss_feeds(self) -> dict:  # type: ignore[override]
         return asyncio.get_event_loop().run_until_complete(_refresh())
     except Exception as exc:
         logger.error("rss_refresh_failed", reason=str(exc))
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 async def _refresh() -> dict:
+    from datetime import datetime
+
     import feedparser
     from sqlalchemy import select
 
     from app.database import async_session_factory
     from app.models.scraping_source import ScrapingSource, SourceType
-
-    from datetime import datetime
 
     total_entries = 0
     feeds_ok = 0

@@ -1,9 +1,7 @@
 """Unit tests for app.core.security — HTML sanitization, SSRF guard, brute-force."""
 
-import pytest
 
 from app.core.security import is_safe_url, sanitize_html
-
 
 # ── sanitize_html ─────────────────────────────────────────────────────────────
 

@@ -8,7 +8,6 @@ from httpx import AsyncClient
 from app.core.auth import create_access_token, hash_password
 from tests.conftest import make_user
 
-
 # ── /api/auth/login ───────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio

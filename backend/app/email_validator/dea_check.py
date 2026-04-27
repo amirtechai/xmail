@@ -11,7 +11,7 @@ _DISPOSABLE_DOMAINS: frozenset[str] = frozenset({
     "spamgourmet.com", "spamgourmet.net", "spamgourmet.org", "deadaddress.com",
     "spamex.com", "mailexpire.com", "spamfree24.org", "spam.la",
     "spamhole.com", "spamoff.de", "spamspot.com", "spamstack.net",
-    "throwam.com", "throwaway.email", "tempinbox.com", "emailondeck.com",
+    "throwaway.email", "tempinbox.com", "emailondeck.com",
 })
 
 

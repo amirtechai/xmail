@@ -4,10 +4,11 @@ import csv
 import io
 import uuid
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import delete, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import AdminUser, CurrentUser, get_session
 from app.core.exceptions import NotFoundError
@@ -17,9 +18,6 @@ from app.schemas.suppression import (
     SuppressionListResponse,
     SuppressionOut,
 )
-
-from fastapi import Depends
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter(prefix="/suppression", tags=["suppression"])
 

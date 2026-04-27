@@ -1,6 +1,5 @@
 """Contact output + update schemas."""
 
-from datetime import datetime
 
 from pydantic import BaseModel
 

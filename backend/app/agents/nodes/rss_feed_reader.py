@@ -9,8 +9,8 @@ import asyncio
 from datetime import datetime
 
 from app.agents.state import XmailState
-
 from app.core.logger import get_logger
+
 logger = get_logger(__name__)
 
 _MAX_ENTRIES_PER_FEED = 50

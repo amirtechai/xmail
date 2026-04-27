@@ -5,13 +5,12 @@ from __future__ import annotations
 import hashlib
 import hmac
 from collections.abc import AsyncGenerator
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 
 import pytest
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from httpx import ASGITransport, AsyncClient
-
 
 # ── minimal app fixture ────────────────────────────────────────────────────────
 

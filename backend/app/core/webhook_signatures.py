@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import base64
 import hashlib
 import hmac
-import base64
 
 
 def verify_mailgun(timestamp: str, token: str, signature: str, signing_key: str) -> bool:
@@ -31,8 +31,8 @@ def verify_sendgrid(raw_body: bytes, signature: str, timestamp: str, public_key_
     The public key is the PEM string from the SendGrid dashboard.
     """
     try:
-        from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.asymmetric import ec
         from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
         pub_key = load_pem_public_key(public_key_pem.encode())

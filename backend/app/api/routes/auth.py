@@ -2,6 +2,7 @@
 
 import base64
 import io
+import uuid
 
 import pyotp
 import qrcode
@@ -9,8 +10,6 @@ from fastapi import APIRouter, HTTPException, Request, status
 from jose import JWTError
 from pydantic import BaseModel
 from sqlalchemy import select
-
-import uuid
 
 from app.api.deps import AdminUser, CurrentUser, SessionDep
 from app.core.auth import (
@@ -117,7 +116,7 @@ async def verify_totp_login(body: TOTPLoginRequest, session: SessionDep) -> Toke
             raise UnauthorizedError()
         user_id: str = payload["sub"]
     except JWTError:
-        raise UnauthorizedError("Invalid challenge token")
+        raise UnauthorizedError("Invalid challenge token") from None
 
     result = await session.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
@@ -234,7 +233,7 @@ async def refresh(body: RefreshRequest, session: SessionDep) -> TokenPair:
             raise UnauthorizedError("Invalid token type")
         user_id: str = payload["sub"]
     except (JWTError, KeyError):
-        raise UnauthorizedError()
+        raise UnauthorizedError() from None
 
     result = await session.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()

@@ -9,15 +9,15 @@ Each endpoint:
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, Request, status
 
 from app.config import settings
+from app.core.logger import get_logger
 from app.core.webhook_signatures import verify_mailgun, verify_postmark, verify_sendgrid
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
@@ -43,7 +43,7 @@ def _dispatch(provider: str, event_type: str, email: str, message_id: str, ts: s
 def _utc_iso(ts: Any) -> str:
     """Convert Unix timestamp or ISO string to UTC ISO-8601 string."""
     if isinstance(ts, (int, float)):
-        return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
+        return datetime.fromtimestamp(ts, tz=UTC).isoformat()
     return str(ts)
 
 
@@ -78,7 +78,7 @@ async def sendgrid_webhook(
     try:
         events: list[dict] = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
 
     dispatched = 0
     for ev in events:
@@ -123,7 +123,7 @@ async def postmark_webhook(
     try:
         ev: dict = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
 
     record_type = ev.get("RecordType", "")
     event_type = _POSTMARK_EVENT_MAP.get(record_type)
@@ -157,7 +157,7 @@ async def mailgun_webhook(request: Request) -> dict:
     try:
         body: dict = await request.json()
     except Exception:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON") from None
 
     sig_block = body.get("signature", {})
     timestamp = str(sig_block.get("timestamp", ""))

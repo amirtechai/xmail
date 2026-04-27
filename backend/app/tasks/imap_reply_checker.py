@@ -13,9 +13,9 @@ import imaplib
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 _SEARCH_WINDOW_DAYS = 7
@@ -34,14 +34,14 @@ def check_imap_replies() -> dict:
 
 
 async def _run() -> dict:
+    from sqlalchemy import select
     from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
     from sqlalchemy.orm import sessionmaker
-    from sqlalchemy import select
 
     from app.config import settings
     from app.core.crypto import get_crypto
-    from app.models.smtp_config import SMTPConfiguration
     from app.models.sent_email import SentEmail, SentEmailStatus
+    from app.models.smtp_config import SMTPConfiguration
 
     engine = create_async_engine(settings.async_database_url, echo=False)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

@@ -2,9 +2,9 @@
 
 import asyncio
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -21,7 +21,7 @@ def run_scraping_task(self, campaign_id: str, audience_type: str) -> dict:  # ty
         )
     except Exception as exc:
         logger.error("scraping_task_failed", campaign_id=campaign_id, reason=str(exc))
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 async def _scrape(campaign_id: str, audience_type: str) -> dict:

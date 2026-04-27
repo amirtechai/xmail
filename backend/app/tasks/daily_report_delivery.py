@@ -4,7 +4,7 @@ Sends the generated PDF/summary to configured admin emails.
 """
 
 import asyncio
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 
 from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
@@ -16,17 +16,18 @@ logger = get_logger(__name__)
 def deliver_daily_report(self, report_date_iso: str | None = None) -> dict:  # type: ignore[override]
     target_date = (
         date.fromisoformat(report_date_iso) if report_date_iso
-        else datetime.now(timezone.utc).date()
+        else datetime.now(UTC).date()
     )
     return asyncio.get_event_loop().run_until_complete(_deliver(target_date))
 
 
 async def _deliver(report_date: date) -> dict:
+    from sqlalchemy import select
+
     from app.config import settings
     from app.database import async_session_factory
     from app.models.daily_report import DailyReport
     from app.models.user import User, UserRole
-    from sqlalchemy import select
 
     if not settings.admin_email:
         logger.info("report_delivery_skipped", reason="no_admin_email_configured")
@@ -52,9 +53,10 @@ async def _deliver(report_date: date) -> dict:
         logger.info("report_delivery_skipped", reason="no_admin_users")
         return {"skipped": True}
 
+    from sqlalchemy import func
+
     from app.models.discovered_contact import DiscoveredContact
     from app.reports import pdf_generator, storage, xml_exporter
-    from sqlalchemy import func
 
     # Generate PDF + XML if not already on disk
     pdf_out = storage.pdf_path(report_date)

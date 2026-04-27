@@ -10,7 +10,6 @@ import pytest
 
 from app.models.daily_report import DailyReport
 
-
 # ── helpers ───────────────────────────────────────────────────────────────────
 
 def _make_report(
@@ -229,7 +228,7 @@ class TestDeliverDailyReport:
             patch("app.reports.storage.pdf_path", return_value=_fake_path()),
             patch("app.reports.storage.xml_path", return_value=_fake_path()),
         ):
-            result = await _deliver(date(2026, 4, 27))
+            await _deliver(date(2026, 4, 27))
 
         html_body = smtp_client.send.call_args.kwargs.get("html_body", "")
         assert "0.0%" in html_body

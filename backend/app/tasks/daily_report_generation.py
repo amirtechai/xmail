@@ -1,11 +1,11 @@
 """Daily report generation task — 05:30 UTC."""
 
 import asyncio
-from datetime import date, datetime, timezone
-
-from app.tasks.celery_app import celery_app
+from datetime import UTC, date, datetime
 
 from app.core.logger import get_logger
+from app.tasks.celery_app import celery_app
+
 logger = get_logger(__name__)
 
 
@@ -13,18 +13,19 @@ logger = get_logger(__name__)
 def generate_daily_report(self, report_date_iso: str | None = None) -> dict:  # type: ignore[override]
     target_date = (
         date.fromisoformat(report_date_iso) if report_date_iso
-        else datetime.now(timezone.utc).date()
+        else datetime.now(UTC).date()
     )
     return asyncio.get_event_loop().run_until_complete(_generate(target_date))
 
 
 async def _generate(report_date: date) -> dict:
+    from sqlalchemy import func, select
+    from sqlalchemy.dialects.postgresql import insert as pg_insert
+
     from app.database import async_session_factory
     from app.models.daily_report import DailyReport
     from app.models.discovered_contact import DiscoveredContact
     from app.models.sent_email import SentEmail, SentEmailStatus
-    from sqlalchemy import func, select
-    from sqlalchemy.dialects.postgresql import insert as pg_insert
 
     async with async_session_factory() as session:
         # Count discovered today

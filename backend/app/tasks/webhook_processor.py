@@ -15,9 +15,9 @@ from __future__ import annotations
 import asyncio
 from datetime import datetime
 
+from app.core.logger import get_logger
 from app.tasks.celery_app import celery_app
 
-from app.core.logger import get_logger
 logger = get_logger(__name__)
 
 
@@ -32,7 +32,7 @@ def process_webhook_event(self, payload: dict) -> dict:  # type: ignore[override
         return asyncio.get_event_loop().run_until_complete(_process(payload))
     except Exception as exc:
         logger.warning("webhook_processor_retry", reason=str(exc), payload=payload)
-        raise self.retry(exc=exc)
+        raise self.retry(exc=exc) from exc
 
 
 async def _process(payload: dict) -> dict:
@@ -65,7 +65,7 @@ async def _process(payload: dict) -> dict:
             sent_email = result.scalar_one_or_none()
 
         if event_type == "bounce":
-            await _handle_bounce(session, sent_email, email, event_time, pg_insert, SuppressionList, SuppressionReason, SentEmailStatus, hash_email)
+            await _handle_bounce(session, sent_email, email, event_time, pg_insert, SuppressionList, SuppressionReason, SentEmailStatus, hash_email)  # noqa: E501
 
         elif event_type == "open":
             await _handle_open(session, sent_email, email, event_time, SentEmailStatus)
@@ -90,39 +90,42 @@ async def _process(payload: dict) -> dict:
     return {"event_type": event_type, "email": email}
 
 
-async def _handle_bounce(session, sent_email, email, event_time, pg_insert, SuppressionList, SuppressionReason, SentEmailStatus, hash_email):
+async def _handle_bounce(session, sent_email, email, event_time, pg_insert, suppression_list_cls, suppression_reason_cls, sent_email_status_cls, hash_email):
     from sqlalchemy import update
+
     from app.models.sent_email import SentEmail
 
     if sent_email:
         await session.execute(
             update(SentEmail)
             .where(SentEmail.id == sent_email.id)
-            .values(status=SentEmailStatus.BOUNCED.value, bounce_processed=True)
+            .values(status=sent_email_status_cls.BOUNCED.value, bounce_processed=True)
         )
-    await _suppress(session, email, SuppressionReason.BOUNCED, sent_email, pg_insert, SuppressionList, hash_email)
+    await _suppress(session, email, suppression_reason_cls.BOUNCED, sent_email, pg_insert, suppression_list_cls, hash_email)
 
 
-async def _handle_open(session, sent_email, email, event_time, SentEmailStatus):
+async def _handle_open(session, sent_email, email, event_time, sent_email_status_cls):
     from sqlalchemy import update
+
     from app.models.sent_email import SentEmail
 
     if sent_email and not sent_email.opened_at:
         await session.execute(
             update(SentEmail)
             .where(SentEmail.id == sent_email.id)
-            .values(status=SentEmailStatus.OPENED.value, opened_at=event_time)
+            .values(status=sent_email_status_cls.OPENED.value, opened_at=event_time)
         )
 
 
-async def _handle_click(session, sent_email, email, event_time, url, SentEmailStatus):
+async def _handle_click(session, sent_email, email, event_time, url, sent_email_status_cls):
     from sqlalchemy import update
+
     from app.models.sent_email import SentEmail
 
     if sent_email:
         existing_clicks = list(sent_email.click_events or [])
         existing_clicks.append({"url": url, "timestamp": event_time.isoformat()})
-        values: dict = {"status": SentEmailStatus.CLICKED.value, "click_events": existing_clicks}
+        values: dict = {"status": sent_email_status_cls.CLICKED.value, "click_events": existing_clicks}
         if not sent_email.clicked_at:
             values["clicked_at"] = event_time
         await session.execute(
@@ -130,12 +133,12 @@ async def _handle_click(session, sent_email, email, event_time, url, SentEmailSt
         )
 
 
-async def _suppress(session, email, reason, sent_email, pg_insert, SuppressionList, hash_email):
+async def _suppress(session, email, reason, sent_email, pg_insert, suppression_list_cls, hash_email):
     if not email:
         return
     from app.deduplication.hasher import hash_email as _hash
     stmt = (
-        pg_insert(SuppressionList)
+        pg_insert(suppression_list_cls)
         .values(
             email=email,
             email_hash=_hash(email),
