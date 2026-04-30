@@ -23,7 +23,7 @@ async def list_configs(session: SessionDep, _: AdminUser) -> list[LLMConfigurati
 
 @router.post("/", response_model=LLMConfigOut, status_code=status.HTTP_201_CREATED)
 async def create_config(
-    body: LLMConfigCreate, session: SessionDep, _: AdminUser
+    body: LLMConfigCreate, session: SessionDep, admin_user: AdminUser
 ) -> LLMConfiguration:
     crypto = get_crypto()
     if body.is_default:
@@ -31,6 +31,7 @@ async def create_config(
         for c in existing:
             c.is_default = False
     config = LLMConfiguration(
+        user_id=admin_user.id,
         provider=body.provider,
         selected_model=body.model_name,
         api_key_encrypted=crypto.encrypt(body.api_key),

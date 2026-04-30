@@ -24,7 +24,7 @@ async def _bloom_add(email: str, redis_client) -> None:  # type: ignore[no-untyp
 async def _db_contains(email: str, session) -> bool:  # type: ignore[no-untyped-def]
     from sqlalchemy import select
 
-    from app.models.suggestion_history import SuggestionHistory
+    from app.models.discovered_contact import DiscoveredContact
     from app.models.suppression_list import SuppressionList
 
     # Check suppression list first (hard block)
@@ -34,11 +34,11 @@ async def _db_contains(email: str, session) -> bool:  # type: ignore[no-untyped-
     if suppressed.scalar_one_or_none():
         return True
 
-    # Check if already suggested/sent
-    suggested = await session.execute(
-        select(SuggestionHistory).where(SuggestionHistory.email == email)
+    # Check if already discovered/processed
+    existing = await session.execute(
+        select(DiscoveredContact).where(DiscoveredContact.email == email)
     )
-    return suggested.scalar_one_or_none() is not None
+    return existing.scalar_one_or_none() is not None
 
 
 async def dedupe_against_db_node(state: XmailState, session, redis_client) -> dict:  # type: ignore[no-untyped-def]

@@ -36,7 +36,7 @@ async def _cleanup() -> dict:
         del_result = await session.execute(
             delete(DiscoveredContact).where(
                 DiscoveredContact.verified_status == VerifiedStatus.UNVERIFIED,
-                DiscoveredContact.created_at < unverified_cutoff,
+                DiscoveredContact.discovered_at < unverified_cutoff,
             )
         )
         deleted = del_result.rowcount
@@ -46,7 +46,7 @@ async def _cleanup() -> dict:
             update(DiscoveredContact)
             .where(
                 DiscoveredContact.verified_status == VerifiedStatus.RISKY,
-                DiscoveredContact.updated_at < risky_cutoff,
+                DiscoveredContact.discovered_at < risky_cutoff,
             )
             .values(verified_status=VerifiedStatus.UNVERIFIED)
         )

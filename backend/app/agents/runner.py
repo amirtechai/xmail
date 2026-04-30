@@ -63,6 +63,7 @@ async def run_discovery(
         "enriched_contacts": [],
         "validated_contacts": [],
         "deduplicated_contacts": [],
+        "inferred_emails": [],
         "persisted_count": 0,
         "error": None,
         "retry_count": 0,
@@ -70,15 +71,17 @@ async def run_discovery(
         "messages": [],
     }
 
+    llm_provider: BaseLLMProvider
     try:
         if llm_config is not None:
             llm_provider = build_provider(llm_config)
         else:
-            llm_provider = _build_env_llm_provider()
-            if llm_provider is None:
+            _env_provider = _build_env_llm_provider()
+            if _env_provider is None:
                 raise ValueError(
                     "No LLM provider configured. Set GROQ_API_KEY or OPENROUTER_API_KEY."
                 )
+            llm_provider = _env_provider
         compiled = build_graph(llm_provider, session, redis_client)
         config = {"configurable": {"thread_id": run.langgraph_thread_id}}
         final_state = await compiled.ainvoke(initial_state, config=config)

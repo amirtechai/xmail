@@ -33,11 +33,13 @@ def verify_sendgrid(raw_body: bytes, signature: str, timestamp: str, public_key_
     try:
         from cryptography.hazmat.primitives import hashes
         from cryptography.hazmat.primitives.asymmetric import ec
+        from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
         from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
         pub_key = load_pem_public_key(public_key_pem.encode())
         sig_bytes = base64.b64decode(signature)
         payload = timestamp.encode() + raw_body
+        assert isinstance(pub_key, EllipticCurvePublicKey)
         pub_key.verify(sig_bytes, payload, ec.ECDSA(hashes.SHA256()))
         return True
     except Exception:

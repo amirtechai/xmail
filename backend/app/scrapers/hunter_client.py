@@ -34,7 +34,7 @@ class HunterClient:
         self._api_key = api_key
 
     async def domain_search(self, domain: str, limit: int = 100) -> list[HunterEmail]:
-        params = {"domain": domain, "limit": limit, "api_key": self._api_key}
+        params: dict[str, str | int] = {"domain": domain, "limit": limit, "api_key": self._api_key}
         async with httpx.AsyncClient(timeout=15) as client:
             r = await client.get(f"{_BASE}/domain-search", params=params)
             r.raise_for_status()

@@ -125,7 +125,7 @@ async def _send(task_self, campaign_id: str) -> dict:
 
         for idx, contact in enumerate(contacts):
             variant = "B" if (subject_b and idx % 2 == 1) else "A"
-            subject = subject_b if variant == "B" else campaign.email_subject
+            subject = (subject_b or "") if variant == "B" else (campaign.email_subject or "")
 
             first_name = contact.first_name or contact.full_name or "there"
             company_name = contact.company or ""

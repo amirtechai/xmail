@@ -26,4 +26,4 @@ def build_provider(config: LLMConfiguration) -> BaseLLMProvider:
     provider_cls = _PROVIDER_MAP.get(config.provider)
     if not provider_cls:
         raise ValueError(f"Unknown LLM provider: {config.provider}")
-    return provider_cls(api_key=api_key, model=config.model_name, base_url=config.base_url)
+    return provider_cls(api_key=api_key, model=config.selected_model, base_url=config.base_url)

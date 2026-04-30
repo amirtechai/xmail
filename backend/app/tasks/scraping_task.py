@@ -32,9 +32,11 @@ async def _scrape(campaign_id: str, audience_type: str) -> dict:
             result = await run_discovery(
                 campaign_id=campaign_id,
                 audience_type=audience_type,
+                audience_keywords=[audience_type],
+                target_count=100,
                 session=session,
-                redis=redis,
+                redis_client=redis,
             )
-            return result
+            return {"run_id": str(result.id), "status": result.status}
         finally:
-            await redis.aclose()
+            await redis.close()

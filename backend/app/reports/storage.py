@@ -28,7 +28,7 @@ def xml_path(report_date: date) -> Path:
 
 def list_reports(limit: int = 90) -> list[dict]:
     """Return list of available reports, newest first."""
-    reports = []
+    reports: list[dict] = []
     if not _BASE_DIR.exists():
         return reports
 

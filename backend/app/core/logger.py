@@ -18,6 +18,7 @@ def configure_logging() -> None:
         structlog.stdlib.add_logger_name,
     ]
 
+    renderer: structlog.types.Processor
     if settings.log_format == "json":
         renderer = structlog.processors.JSONRenderer()
     else:

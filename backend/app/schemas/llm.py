@@ -1,6 +1,7 @@
 """LLM configuration Pydantic schemas."""
 
 import uuid
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -28,7 +29,7 @@ class LLMConfigOut(BaseModel):
 
     @model_validator(mode="before")
     @classmethod
-    def remap(cls, v: object) -> object:
+    def remap(cls, v: Any) -> Any:
         # Map SQLAlchemy model attributes to schema fields
         if hasattr(v, "selected_model"):
             return {

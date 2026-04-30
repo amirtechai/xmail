@@ -73,10 +73,10 @@ async def _deliver(report_date: date) -> dict:
                 "email": c.email,
                 "full_name": c.full_name,
                 "company": c.company,
-                "job_title": c.job_title,
-                "audience_type": c.audience_type,
+                "job_title": c.title,
+                "audience_type": c.audience_type_key,
                 "confidence_score": c.confidence_score,
-                "verified_status": c.verified_status.value if c.verified_status else None,
+                "verified_status": c.verified_status,
             }
             for c in contacts_result.scalars()
         ]

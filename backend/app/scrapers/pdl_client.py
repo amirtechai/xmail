@@ -38,7 +38,7 @@ class PDLClient:
         self._headers = {"X-Api-Key": api_key, "Content-Type": "application/json"}
 
     async def enrich_by_email(self, email: str) -> PDLPerson | None:
-        params = {"email": email, "pretty": False, "titlecase": False}
+        params: dict[str, str | int | bool] = {"email": email, "pretty": False, "titlecase": False}
         async with httpx.AsyncClient(timeout=15) as client:
             r = await client.get(
                 f"{_BASE}/person/enrich",

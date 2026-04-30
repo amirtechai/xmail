@@ -36,7 +36,7 @@ async def _sync() -> dict:
     try:
         await bf_add_batch(redis, hashes)
     finally:
-        await redis.aclose()
+        await redis.close()
 
     logger.info("suppression_sync_done", count=len(hashes))
     return {"synced": len(hashes)}

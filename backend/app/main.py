@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             suppressed = [hash_email(r[0]) for r in result.fetchall()]
         all_hashes = list(set(discovered + suppressed))
         await bf_warmup(redis, all_hashes)
-        await redis.aclose()
+        await redis.close()
         logger.info("bloom_filter_warmed_up", total=len(all_hashes))
     except Exception as exc:
         logger.warning("bloom_filter_warmup_skipped", reason=str(exc))
@@ -64,7 +64,7 @@ def create_app() -> FastAPI:
     # Rate limiter
     limiter = Limiter(key_func=get_remote_address)
     app.state.limiter = limiter
-    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
 
     # Security headers (innermost — runs after CORS, on every response)
     from app.core.middleware import SecurityHeadersMiddleware

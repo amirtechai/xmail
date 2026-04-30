@@ -22,7 +22,7 @@ async def detailed_health(session: SessionDep, _: CurrentUser) -> dict:
     try:
         redis = await get_redis()
         await redis.ping()
-        await redis.aclose()
+        await redis.close()
         checks["redis"] = "ok"
     except Exception as exc:
         checks["redis"] = f"error: {exc}"

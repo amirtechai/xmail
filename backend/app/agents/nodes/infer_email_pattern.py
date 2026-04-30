@@ -25,7 +25,7 @@ _MAX_CANDIDATES_PER_DOMAIN = 30
 _MAX_CONCURRENT_VALIDATIONS = 10
 
 # Ordered by prevalence in the wild — first match wins during detection
-_FORMATS: list[tuple[str, ...]] = [
+_FORMATS: list[tuple[str, str]] = [
     ("first.last", "{fl}.{ll}"),
     ("first_last", "{fl}_{ll}"),
     ("flast", "{f}{ll}"),

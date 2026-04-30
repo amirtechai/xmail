@@ -30,7 +30,7 @@ async def _generate(report_date: date) -> dict:
         # Count discovered today
         discovered = await session.execute(
             select(func.count(DiscoveredContact.id)).where(
-                func.date(DiscoveredContact.created_at) == report_date
+                func.date(DiscoveredContact.discovered_at) == report_date
             )
         )
         discovered_count = discovered.scalar_one()

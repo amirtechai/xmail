@@ -5,6 +5,7 @@ import hashlib
 import io
 import json
 import uuid
+from typing import Any
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile, status
 from fastapi.responses import Response
@@ -13,11 +14,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import AdminUser, CurrentUser, OperatorUser, get_session
 from app.models.discovered_contact import DiscoveredContact
-from app.schemas.contact import BulkDeleteRequest, ContactUpdate, ImportResult, VerifyBulkRequest
+from app.schemas.contact import (
+    BulkDeleteRequest,
+    ContactUpdate,
+    ImportResult,
+    VerifyBulkRequest,
+)
+from app.schemas.contact import (
+    ImportError as ContactImportError,
+)
 
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
-_SORT_COLUMNS: dict[str, object] = {
+_SORT_COLUMNS: dict[str, Any] = {
     "email": DiscoveredContact.email,
     "full_name": DiscoveredContact.full_name,
     "company": DiscoveredContact.company,
@@ -109,9 +118,7 @@ def _serialize(c: DiscoveredContact) -> dict:
         "language": c.language,
         "confidence_score": c.confidence_score,
         "relevance_score": c.relevance_score,
-        "verified_status": c.verified_status
-        if isinstance(c.verified_status, str)
-        else (c.verified_status.value if c.verified_status else None),
+        "verified_status": c.verified_status,
         "mx_valid": c.mx_valid,
         "smtp_valid": c.smtp_valid,
         "is_disposable": c.is_disposable,
@@ -162,7 +169,7 @@ async def list_contacts(
     total = (await session.execute(select(func.count()).select_from(q.subquery()))).scalar_one()
 
     col = _SORT_COLUMNS.get(sort_by, DiscoveredContact.discovered_at)
-    order = desc(col).nulls_last() if sort_dir == "desc" else asc(col).nulls_last()
+    order: Any = desc(col).nulls_last() if sort_dir == "desc" else asc(col).nulls_last()
     q = q.order_by(order).offset((page - 1) * page_size).limit(page_size)
     rows = (await session.execute(q)).scalars().all()
 
@@ -373,7 +380,10 @@ async def import_contacts(
     return ImportResult(
         imported=imported,
         skipped=skipped,
-        errors=[{"row": e["row"], "email": e["email"], "error": e["error"]} for e in errors[:50]],
+        errors=[
+            ContactImportError(row=e["row"], email=e["email"], error=e["error"])
+            for e in errors[:50]
+        ],
     )
 
 

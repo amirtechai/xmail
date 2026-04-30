@@ -42,7 +42,7 @@ async def _snapshot() -> dict:
         await bf_initialize(redis)
         loaded = await bf_warmup(redis, all_hashes)
     finally:
-        await redis.aclose()
+        await redis.close()
 
     logger.info("bloom_snapshot_done", total_hashes=loaded)
     return {"total_hashes": loaded}

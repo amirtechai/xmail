@@ -14,8 +14,8 @@ _SMTP_TIMEOUT = 10
 async def _get_mx_host(domain: str) -> str | None:
     try:
         answers = await dns.asyncresolver.resolve(domain, "MX")
-        best = sorted(answers, key=lambda r: r.preference)[0]
-        return str(best.exchange).rstrip(".")
+        best = sorted(answers, key=lambda r: r.preference)[0]  # type: ignore[attr-defined]
+        return str(best.exchange).rstrip(".")  # type: ignore[attr-defined]
     except Exception:
         return None
 

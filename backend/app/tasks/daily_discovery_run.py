@@ -102,4 +102,4 @@ async def _run_campaign(campaign_id: str) -> dict:
             )
             return {"run_id": str(run.id), "status": run.status}
         finally:
-            await redis.aclose()
+            await redis.close()

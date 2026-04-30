@@ -36,16 +36,15 @@ def check_imap_replies() -> dict:
 
 async def _run() -> dict:
     from sqlalchemy import select
-    from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
     from app.config import settings
     from app.core.crypto import get_crypto
     from app.models.sent_email import SentEmail, SentEmailStatus
     from app.models.smtp_config import SMTPConfiguration
 
-    engine = create_async_engine(settings.async_database_url, echo=False)
-    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    engine = create_async_engine(settings.database_url, echo=False)
+    async_session = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     total_replied = 0
     window_start = datetime.utcnow() - timedelta(days=_SEARCH_WINDOW_DAYS)

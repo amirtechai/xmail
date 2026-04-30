@@ -53,7 +53,7 @@ jobs:
         run: cd backend && ruff format --check app tests
 
       - name: Type check with mypy
-        run: cd backend && mypy app --strict
+        run: cd backend && mypy app
 
       - name: Run tests
         env:

@@ -62,9 +62,7 @@ async def generate_report(
             "job_title": c.title,
             "audience_type": c.audience_type_key,
             "confidence_score": c.confidence_score,
-            "verified_status": c.verified_status
-            if isinstance(c.verified_status, str)
-            else (c.verified_status.value if c.verified_status else None),
+            "verified_status": c.verified_status,
         }
         for c in contacts_result.scalars()
     ]

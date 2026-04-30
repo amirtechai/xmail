@@ -1,6 +1,7 @@
 """Campaign CRUD + AI draft + test send + send dispatch + analytics."""
 
 import uuid
+from collections.abc import Sequence
 from datetime import date, timedelta
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -284,11 +285,12 @@ async def test_send(
         unsubscribe_token="test-token",
     )
     client = SMTPClient(smtp)
-    await client.send_email(
-        to=body.to_email,
-        subject=f"[TEST] {subject}",
-        html=html_with_footer,
-        text=text_with_footer,
+    await client.send(
+        to_email=body.to_email,
+        subject=f"[TEST] {subject or '(no subject)'}",
+        html_body=html_with_footer,
+        text_body=text_with_footer,
+        unsubscribe_token="test-token",
     )
     return {"status": "sent", "to": body.to_email}
 
@@ -302,7 +304,7 @@ async def ai_draft(body: AIDraftRequest, session: SessionDep, _: OperatorUser) -
         )
     else:
         llm_result = await session.execute(
-            select(LLMConfiguration).where(LLMConfiguration.is_active == True).limit(1)  # noqa: E712
+            select(LLMConfiguration).where(LLMConfiguration.is_default == True).limit(1)  # noqa: E712
         )
     llm_cfg = llm_result.scalar_one_or_none()
     if not llm_cfg:
@@ -664,7 +666,7 @@ async def campaign_stats_overview(
 # ── Sequences ─────────────────────────────────────────────────────────────────
 
 
-def _serialize_seq(seq: CampaignSequence, steps: list) -> dict:
+def _serialize_seq(seq: CampaignSequence, steps: Sequence[CampaignSequenceStep]) -> dict:
     return {
         "id": str(seq.id),
         "campaign_id": str(seq.campaign_id),
